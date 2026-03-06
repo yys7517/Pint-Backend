@@ -22,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,7 +32,7 @@ import java.util.UUID;
 public class ImageService {
 
 
-    private ImageRepository imageRepository;
+    private final ImageRepository imageRepository;
     private final String uploadDir = "upload/";
 
     public List<Image> getAllimage() {
@@ -56,7 +58,8 @@ public class ImageService {
             File dest = new File(dir, fileName);
             System.out.println("uploadDir = " + dir.getAbsolutePath());
             System.out.println("dest = " + dest.getAbsolutePath());
-            image.transferTo(dest);
+            Files.copy(image.getInputStream(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
             imagePath = "/upload/" + fileName;
         }
 
