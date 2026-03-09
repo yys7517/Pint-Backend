@@ -3,12 +3,22 @@ spring:
     name: pint-backend
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/pint_db
-    username: jskt
+    url: jdbc:postgresql://pint-postgres:5432/pintdb
+    username: pintadmin
+    password: pintpass
+
+  data:
+    redis:
+      host: pint-redis
+      port: 6379
+
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+
+
   servlet:
     multipart:
       enabled: true
