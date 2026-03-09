@@ -58,6 +58,7 @@ public class ImageService {
             File dest = new File(dir, fileName);
             System.out.println("uploadDir = " + dir.getAbsolutePath());
             System.out.println("dest = " + dest.getAbsolutePath());
+
             Files.copy(image.getInputStream(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             imagePath = "/upload/" + fileName;

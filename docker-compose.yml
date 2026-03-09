@@ -1,64 +1,34 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: pint-backend-app:latest
-    container_name: pint-backend-app
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pint_db
-      SPRING_DATASOURCE_USERNAME: pint_user
-      SPRING_DATASOURCE_PASSWORD: pint_password
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
-      APP_UPLOAD_DIR: /app/upload
-    volumes:
-      - app_upload:/app/upload
-    restart: unless-stopped
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:15
     container_name: pint-postgres
+    restart: always
     environment:
-      POSTGRES_DB: pint_db
-      POSTGRES_USER: pint_user
-      POSTGRES_PASSWORD: pint_password
+      POSTGRES_DB: pintdb
+      POSTGRES_USER: pintadmin
+      POSTGRES_PASSWORD: pintpass
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pint_user -d pint_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    restart: unless-stopped
+      - pint-postgres-data:/var/lib/postgresql/data
 
   redis:
-    image: redis:7-alpine
+    image: redis:7
     container_name: pint-redis
-    command: ["redis-server", "--appendonly", "yes"]
+    restart: always
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: pint-app
+    depends_on:
+      - postgres
+      - redis
+
+    ports:
+      - "8080:8080"
 
 volumes:
-  postgres_data:
-  redis_data:
-  app_upload:
+  pint-postgres-data:

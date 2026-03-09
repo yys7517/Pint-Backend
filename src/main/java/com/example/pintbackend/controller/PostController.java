@@ -26,7 +26,6 @@ public class PostController {
     private final ImageService imageService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-
     public Image createPost(@RequestParam("image") MultipartFile file) throws IOException {
         return imageService.createImage(file);
     }
