@@ -42,3 +42,4 @@ out/
 .vscode/
 
 
+.env
