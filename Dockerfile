@@ -2,6 +2,6 @@ FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /app
 
-COPY build/libs/pint-backend-0.0.1-SNAPSHOT-plain.jar app.jar
+COPY build/libs/pint-backend-0.0.1-SNAPSHOT.jar app.jar
 
 ENTRYPOINT ["java","-jar","/app/app.jar"]
