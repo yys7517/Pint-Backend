@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to EC2 via SSH
-        uses: appleboy/ssh-action   # github user who created and maintains the github Action
+        uses: appleboy/ssh-action@v1.0.3   # github user who created and maintains the github Action
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
@@ -23,6 +23,5 @@ jobs:
             cd Pint-Backend
             git pull
             ./gradlew build
-            docker-compose down
             docker-compose up -d --build
 
