@@ -19,9 +19,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
+import java.util.UUID;
 
 
 @Service
@@ -36,46 +37,44 @@ public class S3TestService {
         this.amazonS3 = amazonS3;
     }
 
-    public String testUpload(MultipartFile file) {
-
-        String content = "S3 connection success!";
-        String path = "images/profileImage.";
-
-        path += file.getOriginalFilename().split("\\.")[1];
+    public String testUpload(MultipartFile file) throws IOException {
+        String path = buildObjectKey(file);
 
         ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(content.length());
+        metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType());
 
-        amazonS3.putObject(
-                bucket,
-                path,
-                new ByteArrayInputStream(content.getBytes()),
-                metadata
-        );
+        amazonS3.putObject(bucket, path, file.getInputStream(), metadata);
 
-        String presignedURL = getPresignedUrlToUpload(path);
-
-//        return amazonS3.getUrl(bucket, path).toString();
-        return presignedURL;
+        // Private 버킷에서도 조회 가능한 URL (유효기간 있음)
+        return getPresignedUrlToRead(path);
     }
 
-    public String getPresignedUrlToUpload(String path) {
-
-        // 2. URL 유효 시간 설정 (예: 5분)
+    public String getPresignedUrlToRead(String path) {
         Date expiration = new Date();
         long expTimeMillis = expiration.getTime();
-        expTimeMillis += 1000 * 60 * 5; // 5분 (ms 단위)
+        expTimeMillis += 1000 * 60 * 5;
         expiration.setTime(expTimeMillis);
 
-        // 3. PUT 메서드로 Pre-signed URL 요청 객체 생성
         GeneratePresignedUrlRequest generatePresignedUrlRequest =
                 new GeneratePresignedUrlRequest(bucket, path)
-                        .withMethod(HttpMethod.PUT)
+                        .withMethod(HttpMethod.GET)
                         .withExpiration(expiration);
 
-        // 4. URL 생성 및 반환
         URL url = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
 
         return url.toString();
+    }
+
+    private String buildObjectKey(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null) {
+            int dotIndex = originalFilename.lastIndexOf(".");
+            if (dotIndex >= 0) {
+                extension = originalFilename.substring(dotIndex);
+            }
+        }
+        return "images/profileImage-" + UUID.randomUUID() + extension;
     }
 }
