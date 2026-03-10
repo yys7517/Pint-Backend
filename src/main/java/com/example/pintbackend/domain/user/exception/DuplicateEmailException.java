@@ -1,4 +1,4 @@
-package com.example.pintbackend.exception;
+package com.example.pintbackend.domain.user.exception;
 
 public class DuplicateEmailException extends RuntimeException {
 

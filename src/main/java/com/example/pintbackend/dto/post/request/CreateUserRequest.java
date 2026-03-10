@@ -1,6 +1,6 @@
 package com.example.pintbackend.dto.post.request;
 
-import com.example.pintbackend.domain.User;
+import com.example.pintbackend.domain.user.entity.User;
 import jakarta.validation.constraints.NotBlank;
 
 
