@@ -8,12 +8,10 @@
 
 package com.example.pintbackend.controller;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.example.pintbackend.dto.XmpAnalysisResponse;
-import com.example.pintbackend.service.S3TestService;
-import com.example.pintbackend.service.XmpAnalysisService;
+import com.example.pintbackend.service.S3Service.S3TestService;
+import com.example.pintbackend.service.S3Service.XmpAnalysisService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

@@ -8,7 +8,7 @@
  * Author: jskt
  */
 
-package com.example.pintbackend.service;
+package com.example.pintbackend.service.S3Service;
 
 
 import com.amazonaws.HttpMethod;

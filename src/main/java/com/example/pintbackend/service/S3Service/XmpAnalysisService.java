@@ -1,4 +1,4 @@
-package com.example.pintbackend.service;
+package com.example.pintbackend.service.S3Service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.example.pintbackend.dto.XmpAnalysisResponse;

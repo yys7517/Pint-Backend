@@ -11,7 +11,7 @@
 package com.example.pintbackend.controller;
 
 import com.example.pintbackend.domain.Image;
-import com.example.pintbackend.service.ImageService;
+import com.example.pintbackend.service.S3Service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
