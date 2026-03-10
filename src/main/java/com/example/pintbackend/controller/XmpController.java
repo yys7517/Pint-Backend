@@ -1,7 +1,7 @@
 package com.example.pintbackend.controller;
 
 import com.example.pintbackend.dto.XmpAnalysisResponse;
-import com.example.pintbackend.service.XmpAnalysisService;
+import com.example.pintbackend.service.S3Service.XmpAnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
