@@ -32,3 +32,8 @@ cloud:
       static: ${AWS_REGION}
     s3:
       bucket: ${AWS_S3_BUCKET}
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  access-token-expire-ms: ${JWT_ACCESS_TOKEN_EXPIRE_MS:3600000}
+  refresh-token-expire-ms: ${JWT_REFRESH_TOKEN_EXPIRE_MS:1209600000}
