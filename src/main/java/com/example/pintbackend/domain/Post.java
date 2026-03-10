@@ -11,6 +11,7 @@
 
 package com.example.pintbackend.domain;
 
+import com.example.pintbackend.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,12 +20,24 @@ import lombok.Setter;
 @Table(name = "posts")
 @Getter
 @Setter
-public class Post {
+public class Post extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "description", nullable = false)
+    private String description;
 
+    @Column(name = "title", nullable = false)
+    private String location;
 
+    @Column
+    private String camera;
+
+    @Column(name = "image", nullable = false)
+    private String imageFileS3Key;
+
+    @Column(name = "filter")
+    private String filterFileS3Key;
 }
