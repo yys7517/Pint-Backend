@@ -13,9 +13,7 @@ package com.example.pintbackend.domain;
 
 import com.example.pintbackend.domain.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +21,8 @@ import java.time.LocalDateTime;
 @Table(name = "posts")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Post extends BaseEntity {
 
@@ -33,7 +33,7 @@ public class Post extends BaseEntity {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "location", nullable = false)
     private String location;
 
     @Column
