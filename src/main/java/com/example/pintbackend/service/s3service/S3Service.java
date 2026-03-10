@@ -123,4 +123,12 @@ public class S3Service {
             default -> ".bin";
         };
     }
+
+    /**
+     * 포스트 지우기
+     */
+
+    public void deletePost(String key) {
+        amazonS3.deleteObject(bucket, key);
+    }
 }
