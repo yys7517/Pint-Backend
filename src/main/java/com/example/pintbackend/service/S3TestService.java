@@ -15,7 +15,6 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.example.pintbackend.dto.XmpAnalysisResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 
@@ -85,19 +85,42 @@ public class S3TestService {
      * - 원본 확장자 유지(.png, .jpg 등)
      */
     private String buildObjectKey(MultipartFile file) {
-        String originalFilename = file.getOriginalFilename();
-        String extension = "";  // 파일 확장자
-        if (originalFilename != null) {
-            // 파일명에 '.'이 있으면 마지막 '.' 이후를 확장자로 사용한다.
-            int dotIndex = originalFilename.lastIndexOf(".");
-            if (dotIndex >= 0) {
-                extension = originalFilename.substring(dotIndex);
-            }
-        }
-        if(extension.contains("xmp")) {
+        String extension = resolveExtension(file);
+        if (".xmp".equals(extension)) {
           return "xmp/" + UUID.randomUUID() + extension;
         }
 
         return "images/profileImage-" + UUID.randomUUID() + extension;
+    }
+
+    /**
+     * 확장자 우선순위:
+     * 1) 원본 파일명 확장자
+     * 2) Content-Type 기반 추론
+     * 3) 없으면 .bin
+     */
+    private String resolveExtension(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename != null) {
+            int dotIndex = originalFilename.lastIndexOf(".");
+            if (dotIndex >= 0) {
+                return originalFilename.substring(dotIndex).toLowerCase(Locale.ROOT);
+            }
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            return ".bin";
+        }
+
+        return switch (contentType.toLowerCase(Locale.ROOT)) {
+            case "image/png" -> ".png";
+            case "image/jpeg" -> ".jpeg";
+            case "image/jpg" -> ".jpg";
+            case "image/webp" -> ".webp";
+            case "image/gif" -> ".gif";
+            case "application/rdf+xml", "application/xml", "text/xml", "text/plain" -> ".xmp";
+            default -> ".bin";
+        };
     }
 }
