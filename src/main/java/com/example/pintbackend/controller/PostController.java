@@ -11,9 +11,11 @@
 package com.example.pintbackend.controller;
 
 import com.example.pintbackend.domain.Image;
-import com.example.pintbackend.service.S3Service.ImageService;
+import com.example.pintbackend.dto.common.response.BaseResponse;
+import com.example.pintbackend.service.s3service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,15 +28,14 @@ public class PostController {
     private final ImageService imageService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Image createPost(@RequestParam("image") MultipartFile file) throws IOException {
-        return imageService.createImage(file);
-    }
+    public ResponseEntity<BaseResponse<?>> createPost(
+            @RequestParam("image") MultipartFile imageFile,
+            @RequestParam("filter") MultipartFile filterFile,
+            @RequestParam("location") String location,
+            @RequestParam("description") String description) throws IOException {
 
 
-    @GetMapping("/{id}")
-    public Image getImageById(@PathVariable Long id) {
-        Image image = imageService.getImage(id);
-        return imageService.getImage(id);
+        return ResponseEntity.ok(BaseResponse.success(""));
     }
 
 

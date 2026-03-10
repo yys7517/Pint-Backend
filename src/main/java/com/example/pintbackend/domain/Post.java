@@ -13,13 +13,17 @@ package com.example.pintbackend.domain;
 
 import com.example.pintbackend.domain.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "posts")
 @Getter
 @Setter
+@Builder
 public class Post extends BaseEntity {
 
     @Id
@@ -40,4 +44,6 @@ public class Post extends BaseEntity {
 
     @Column(name = "filter")
     private String filterFileS3Key;
+
+    private LocalDateTime createdAt;
 }

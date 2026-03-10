@@ -8,7 +8,7 @@
  * Author: jskt
  */
 
-package com.example.pintbackend.service.S3Service;
+package com.example.pintbackend.service.s3service;
 
 
 import com.amazonaws.HttpMethod;
@@ -29,7 +29,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class S3TestService {
+public class S3Service {
 
     private final AmazonS3 amazonS3;
 
@@ -64,7 +64,7 @@ public class S3TestService {
         // URL 만료 시간을 "현재 시각 + 5분"으로 설정한다.
         Date expiration = new Date();
         long expTimeMillis = expiration.getTime();
-        expTimeMillis += 1000 * 60 * 5;
+        expTimeMillis += 1000 * 60 * 60;
         expiration.setTime(expTimeMillis);
 
         // 조회 목적 URL이므로 반드시 GET 메서드로 서명해야 한다.
@@ -90,7 +90,7 @@ public class S3TestService {
           return "xmp/" + UUID.randomUUID() + extension;
         }
 
-        return "images/profileImage-" + UUID.randomUUID() + extension;
+        return "images/" + UUID.randomUUID() + extension;
     }
 
     /**

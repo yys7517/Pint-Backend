@@ -12,7 +12,7 @@
  * Author: jskt
  */
 
-package com.example.pintbackend.service.S3Service;
+package com.example.pintbackend.service.s3service;
 
 import com.example.pintbackend.domain.Image;
 import com.example.pintbackend.repository.ImageRepository;
@@ -70,3 +70,6 @@ public class ImageService {
         return imageRepository.save(img);
     }
 }
+
+
+
