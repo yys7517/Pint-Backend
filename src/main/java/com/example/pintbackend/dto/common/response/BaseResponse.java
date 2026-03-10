@@ -1,4 +1,4 @@
-package com.example.pintbackend.common.response;
+package com.example.pintbackend.dto.common.response;
 
 /**
  * 모든 API 응답에서 공통으로 사용하는 기본 응답 포맷.
