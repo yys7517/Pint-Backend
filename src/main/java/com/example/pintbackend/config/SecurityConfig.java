@@ -53,7 +53,7 @@ public class SecurityConfig {
                 // 회원가입/로그인 및 swagger는 허용
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/posts/**").permitAll()
+                .requestMatchers("/posts", "/posts/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated()
         )
