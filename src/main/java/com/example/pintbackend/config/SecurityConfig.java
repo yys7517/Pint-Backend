@@ -1,7 +1,5 @@
 package com.example.pintbackend.config;
 
-import com.example.pintbackend.global.jwt.filter.JwtAuthenticationFilter;
-import com.example.pintbackend.global.jwt.service.JwtTokenProvider;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +24,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-  private final JwtTokenProvider jwtTokenProvider;
 
   @Value("${cors.allowed-origins}")
   private String allowedOrigins;
@@ -56,9 +52,7 @@ public class SecurityConfig {
                 .requestMatchers("/posts", "/posts/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated()
-        )
-        // JWT 인증 필터를 UsernamePasswordAuthenticationFilter 앞에 등록
-        .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+        );
 
     return http.build();
   }

@@ -16,15 +16,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+
 
 @Entity
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class User extends BaseEntity implements UserDetails {
+public class User extends BaseEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,37 +58,6 @@ public class User extends BaseEntity implements UserDetails {
     this.introduction = introduction;
     this.profileImageS3Key = profileImageS3Key;
     this.role = role;
-  }
-
-  @Override
-  public Collection<? extends GrantedAuthority> getAuthorities() {
-    Role authorityRole = (role == null) ? Role.USER : role;
-    return List.of(new SimpleGrantedAuthority("ROLE_" + authorityRole.name()));
-  }
-
-  @Override
-  public String getUsername() {
-    return email; // ID를 이메일로 사용
-  }
-
-  @Override
-  public boolean isAccountNonExpired() {
-    return true;
-  }
-
-  @Override
-  public boolean isAccountNonLocked() {
-    return true;
-  }
-
-  @Override
-  public boolean isCredentialsNonExpired() {
-    return true;
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return true;
   }
 
   public void encodePassword(String encodedPassword) {
