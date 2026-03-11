@@ -15,22 +15,23 @@ import com.example.pintbackend.dto.XmpAnalysisResponse;
 import com.example.pintbackend.dto.postDto.CreatePostRequest;
 import com.example.pintbackend.dto.postDto.PostImageResponse;
 import com.example.pintbackend.dto.postDto.PostResponse;
+import com.example.pintbackend.dto.postDto.UpdatePostRequest;
 import com.example.pintbackend.repository.PostRepository;
 import com.example.pintbackend.service.s3service.S3Service;
 import com.example.pintbackend.service.s3service.XmpAnalysisService;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.type.TrueFalseConverter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
+
+@Transactional(readOnly = true)
 public class PostService {
 
     private final PostRepository postRepository;
@@ -42,55 +43,87 @@ public class PostService {
      * 포스트 만들때는 presigned URL 반환해주기
      *
      */
+    @Transactional
     public void createPost(CreatePostRequest request) throws IOException {
 
-        // s3key -> actual image url
-        try {
-            String imageKey = s3Service.uploadFile(request.getImage());
-            String fileKey = s3Service.uploadFile(request.getFilter());
-            // DTO->Create
-            Post post = Post.builder()
-                    .description(request.getDescription())
-                    .location(request.getLocation())
-                    .imageFileS3Key(imageKey)
-                    .filterFileS3Key(fileKey)
-                    .createdAt(LocalDateTime.now())
-                    .build();
+        // key -> actual image url
+        String imageKey = s3Service.uploadFile(request.getImage());
+        String fileKey = s3Service.uploadFile(request.getFilter());
 
-            // DB에 저장하기
-            Post saved = postRepository.save(post);
+        // DTO->Create
+        Post post = Post.builder()
+                .description(request.getDescription())
+                .location(request.getLocation())
+                .imageFileS3Key(imageKey)
+                .filterFileS3Key(fileKey)
+                .build();
 
-        } catch (IOException e) {
-            throw new RuntimeException("ERROR: S3에 업로드를 실패했습니다");
-        }
-
+        // DB에 저장하기
+        postRepository.save(post);
     }
 
     /**
      * getAllPost
+     * Response: presignedUrl, and postId
      */
-
     public List<PostImageResponse> getAllPost() {
 
         List<Post> posts = postRepository.findAll();
-        return PostImageResponse.fromList(posts, s3Service);
+
+        return posts.stream()
+                .map(post -> PostImageResponse.from(
+                        post,
+                        s3Service.getPresignedUrlToRead(post.getImageFileS3Key())
+                ))
+                .toList();
     }
 
     /**
      * getPostById
      */
-
     public PostResponse getPostById(Long postId) throws IOException {
 
-        Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("ERROR: 포스트가 없습니다"));
+        log.info("포스트를 id 로 불러오는중 {}", postId);
 
-        // presigned Url
+        Post post = postRepository.findById(postId).orElseThrow(() -> {
+            log.warn("불러오는 페이지가 없습니다 {}", postId);
+            return new RuntimeException("ERROR: 포스트가 없습니다");
+        });
+
+        log.info("포스트를 성공적으로 불러왔습니다 {}", postId);
+
+        // 상세페이지에 추가로 반환할 정보들 (이미지, 필터 파일)
         String imageUrl = s3Service.getPresignedUrlToRead(post.getImageFileS3Key());
-
         XmpAnalysisResponse xmpToJson = xmpAnalysisService.analyze(post.getFilterFileS3Key());
 
         return PostResponse.from(post, imageUrl, xmpToJson);
     }
+
+    /**
+     * editPostById
+     * TODO: create editPostById function with description, location, filter(JSON), and camera request
+     * TODO: repsonse -> description, location, filter(JSON), camera.
+     */
+    @Transactional
+    public void updatePost(Long postId, UpdatePostRequest request) throws IOException {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("ERROR: 수정할 포스트가 없습니다"));
+
+        String newImageKey = null;
+        String newFilterKey = null;
+
+        if (request.getImage() != null && !request.getImage().isEmpty()) {
+            s3Service.deletePost(post.getImageFileS3Key());     // 게시글 만들었을떄 넣었던 이미지 지우기 (충돌 방지)
+            newImageKey = s3Service.uploadFile(request.getImage());
+        }
+
+        if (request.getFilter() != null && !request.getFilter().isEmpty()) {
+            s3Service.deletePost(post.getFilterFileS3Key());     // 게시글 만들었을떄 넣었던 이미지 지우기 (충돌 방지)
+            newFilterKey = s3Service.uploadFile(request.getFilter());
+        }
+
+        post.update(request.getDescription(), request.getLocation(), newImageKey, newFilterKey);
+    }
+
 
     /**
      * deletePost
@@ -101,6 +134,7 @@ public class PostService {
 
         // S3 에서 지우기
         s3Service.deletePost(post.getImageFileS3Key());
+        s3Service.deletePost(post.getFilterFileS3Key());
 
         // delete in db
         postRepository.delete(post);
