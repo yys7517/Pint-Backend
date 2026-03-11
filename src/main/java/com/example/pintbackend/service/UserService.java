@@ -29,7 +29,7 @@ public class UserService {
 
   // 회원가입 - 기본 제공 save 사용
   @Transactional
-  public User signupUser(User user) {
+  public void signupUser(User user) {
     if (userRepository.existsByEmail(user.getEmail())) {
       throw new DuplicateEmailException(user.getEmail());
     }
@@ -37,7 +37,8 @@ public class UserService {
     // password encoding
     user.encodePassword(passwordEncoder.encode(user.getPassword()));
     user.setRole(Role.USER);
-    return userRepository.save(user);
+
+    userRepository.save(user);
   }
 
   @Transactional
@@ -66,5 +67,9 @@ public class UserService {
     );
 
     return user.getId();
+  }
+
+  public boolean isAvailableEmail(String email) {
+    return !userRepository.existsByEmail(email);  // email을 쓰는 유저가 이미 존재하면 false값 반환
   }
 }

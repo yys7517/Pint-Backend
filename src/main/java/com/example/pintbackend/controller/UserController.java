@@ -2,6 +2,7 @@ package com.example.pintbackend.controller;
 
 import com.example.pintbackend.domain.user.entity.User;
 import com.example.pintbackend.dto.user.request.LoginUserRequest;
+import com.example.pintbackend.dto.user.response.CheckDuplicateEmailResponse;
 import com.example.pintbackend.dto.user.response.LoginUserResponse;
 import com.example.pintbackend.dto.common.response.BaseResponse;
 import com.example.pintbackend.dto.user.request.CreateUserRequest;
@@ -38,11 +39,13 @@ public class UserController {
   }
 
   @PostMapping("/unique")
-  public ResponseEntity<BaseResponse<?>> checkDuplicateEmail(
+  public ResponseEntity<BaseResponse<CheckDuplicateEmailResponse>> checkDuplicateEmail(
       @RequestParam ("email") String email
   ) {
-    // TODO. 이메일 중복 체크
-    return ResponseEntity.ok(BaseResponse.success(""));
+    boolean isAvailable = userService.isAvailableEmail(email);
+    CheckDuplicateEmailResponse response = new CheckDuplicateEmailResponse(isAvailable);
+
+    return ResponseEntity.ok(BaseResponse.success(response));
   }
 
   @PostMapping("/login")
