@@ -15,6 +15,7 @@ import com.example.pintbackend.dto.common.response.BaseResponse;
 import com.example.pintbackend.dto.postDto.CreatePostRequest;
 import com.example.pintbackend.dto.postDto.PostImageResponse;
 import com.example.pintbackend.dto.postDto.PostResponse;
+import com.example.pintbackend.dto.postDto.UpdatePostRequest;
 import com.example.pintbackend.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +61,19 @@ public class PostController {
         return ResponseEntity.ok(BaseResponse.success(post));
     }
 
+    /**
+     * editing post
+     */
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<BaseResponse<?>> updatePost(
+            @PathVariable Long id,
+            @ModelAttribute UpdatePostRequest request) throws IOException {
+        postService.updatePost(id, request);
+
+        return ResponseEntity.ok(BaseResponse.success("포스트가 수정되였습니다!"));
+    }
+
+
     @DeleteMapping("/{id}")
     @Operation(summary = "아이디로 포스트 지우기")
     public ResponseEntity<BaseResponse<?>> deletePost(@PathVariable Long id) {
@@ -68,8 +82,6 @@ public class PostController {
 
         return ResponseEntity.ok(BaseResponse.success("포스트가 정상적으로 지워졌습니다!"));
     }
-
-
 
 
 }

@@ -11,38 +11,22 @@
 package com.example.pintbackend.dto.postDto;
 
 import com.example.pintbackend.domain.Post;
-import com.example.pintbackend.service.s3service.S3Service;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.List;
 
 @Getter
 @Builder
 @AllArgsConstructor
 public class PostImageResponse {
 
-    private Long postId;
+    private Long id;
     private String imageUrl;
 
-    public static PostImageResponse from(Post post, S3Service s3Service) {
+    public static PostImageResponse from(Post post, String imageUrl) {
         return PostImageResponse.builder()
-                .postId(post.getId())
-                .imageUrl(s3Service.getPresignedUrlToRead(post.getImageFileS3Key()))
+                .id(post.getId())
+                .imageUrl(imageUrl)
                 .build();
-    }
-
-    /**
-     * 리스트 요청을 했을떄 포스트 아이디, presigned URL 반환하는 헬퍼 함수
-     *
-     * @param posts
-     * @param s3Service
-     * @return
-     */
-    public static List<PostImageResponse> fromList(List<Post> posts, S3Service s3Service) {
-        return posts.stream()
-                .map(post -> from(post, s3Service))
-                .toList();
     }
 }

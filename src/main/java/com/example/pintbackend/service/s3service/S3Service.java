@@ -36,24 +36,27 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-  /**
-   * MultipartFile 이미지 or XMP 파일을 S3에 업로드하고, s3Key 값을 반환한다.
-   */
+    /**
+     * MultipartFile 이미지 or XMP 파일을 S3에 업로드하고, s3Key 값을 반환한다.
+     */
     public String uploadFile(MultipartFile file) throws IOException {
-      // S3 객체 키(경로 + 파일명)를 생성한다.
-      String s3Key = buildObjectKey(file);
+        // S3 객체 키(경로 + 파일명)를 생성한다.
+        String s3Key = buildObjectKey(file);
 
-      // S3에 저장할 메타데이터를 파일 기준으로 맞춘다.
-      ObjectMetadata metadata = new ObjectMetadata();
-      metadata.setContentLength(file.getSize());
-      metadata.setContentType(file.getContentType());
+        // S3에 저장할 메타데이터를 파일 기준으로 맞춘다.
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType());
 
-      // MultipartFile의 실제 바이트를 S3에 업로드한다.
-      amazonS3.putObject(bucket, s3Key, file.getInputStream(), metadata);  // 버킷 서버에 업로드
+        // MultipartFile의 실제 바이트를 S3에 업로드한다.
+        // amazonS3.putObject가 실패한다면?
+        try {
+            amazonS3.putObject(bucket, s3Key, file.getInputStream(), metadata);  // 버킷 서버에 업로드
+        } catch (IOException e) {
+            throw new RuntimeException("ERROR: S3에 업로드를 실패했습니다", e);
+        }
 
-      // amazonS3.putObject가 실패한다면?
-
-      return s3Key;  // DB에 저장을 위해 s3 key값 반환
+        return s3Key;  // DB에 저장을 위해 s3 key값 반환
     }
 
     /**
@@ -62,10 +65,7 @@ public class S3Service {
      */
     public String getPresignedUrlToRead(String path) {
         // URL 만료 시간을 "현재 시각 + 5분"으로 설정한다.
-        Date expiration = new Date();
-        long expTimeMillis = expiration.getTime();
-        expTimeMillis += 1000 * 60 * 60;
-        expiration.setTime(expTimeMillis);
+        Date expiration = new Date(System.currentTimeMillis() + 1000 * 60 * 60);
 
         // 조회 목적 URL이므로 반드시 GET 메서드로 서명해야 한다.
         GeneratePresignedUrlRequest generatePresignedUrlRequest =
@@ -87,7 +87,7 @@ public class S3Service {
     private String buildObjectKey(MultipartFile file) {
         String extension = resolveExtension(file);
         if (".xmp".equals(extension)) {
-          return "xmp/" + UUID.randomUUID() + extension;
+            return "xmp/" + UUID.randomUUID() + extension;
         }
 
         return "images/" + UUID.randomUUID() + extension;
@@ -99,6 +99,7 @@ public class S3Service {
      * 2) Content-Type 기반 추론
      * 3) 없으면 .bin
      */
+
     private String resolveExtension(MultipartFile file) {
         String originalFilename = file.getOriginalFilename();
         if (originalFilename != null) {
@@ -113,6 +114,7 @@ public class S3Service {
             return ".bin";
         }
 
+        // TODO: 더 간격하게 하
         return switch (contentType.toLowerCase(Locale.ROOT)) {
             case "image/png" -> ".png";
             case "image/jpeg" -> ".jpeg";
