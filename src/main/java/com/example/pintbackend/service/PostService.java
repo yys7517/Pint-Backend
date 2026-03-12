@@ -11,18 +11,24 @@
 package com.example.pintbackend.service;
 
 import com.example.pintbackend.domain.Post;
+import com.example.pintbackend.domain.user.entity.User;
+import com.example.pintbackend.domain.user.exception.UserNotFoundException;
 import com.example.pintbackend.dto.XmpAnalysisResponse;
 import com.example.pintbackend.dto.postDto.CreatePostRequest;
 import com.example.pintbackend.dto.postDto.PostImageResponse;
 import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.UpdatePostRequest;
 import com.example.pintbackend.repository.PostRepository;
+import com.example.pintbackend.repository.UserRepository;
 import com.example.pintbackend.service.imageservice.ImageMetadata;
 import com.example.pintbackend.service.imageservice.ImageMetadataService;
 import com.example.pintbackend.service.s3service.S3Service;
 import com.example.pintbackend.service.s3service.XmpAnalysisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +43,7 @@ import java.util.List;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
     private final S3Service s3Service;
     private final XmpAnalysisService xmpAnalysisService;
     private final ImageMetadataService imageMetadataService;
@@ -47,7 +54,11 @@ public class PostService {
      *
      */
     @Transactional
-    public void createPost(CreatePostRequest request) throws IOException {
+    public void createPost(CreatePostRequest request, Authentication authentication) throws IOException {
+        String userEmail = authentication.getName();
+        User user = userRepository.findByEmail(userEmail).orElseThrow(
+            () -> new UserNotFoundException(userEmail)
+        );
 
         // camera info
         ImageMetadata meta = imageMetadataService.extract(request.getImage());
@@ -66,6 +77,8 @@ public class PostService {
                 .height(meta.height())
                 .camera(meta.camera())
                 .build();
+
+        user.addPost(post);
 
         // DB에 저장하기
         postRepository.save(post);
@@ -154,5 +167,18 @@ public class PostService {
 
         // delete in db
         postRepository.delete(post);
+    }
+
+    private User getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            throw new RuntimeException("ERROR: 로그인한 사용자만 포스트를 작성할 수 있습니다");
+        }
+
+        return userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("ERROR: 로그인 사용자를 찾을 수 없습니다"));
     }
 }

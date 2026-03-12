@@ -5,6 +5,7 @@ import com.example.pintbackend.dto.user.request.LoginUserRequest;
 import com.example.pintbackend.dto.user.response.CheckDuplicateEmailResponse;
 import com.example.pintbackend.dto.common.response.BaseResponse;
 import com.example.pintbackend.dto.user.request.CreateUserRequest;
+import com.example.pintbackend.dto.user.response.LoginUserResponse;
 import com.example.pintbackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -157,11 +159,14 @@ public class AuthController {
   public ResponseEntity<BaseResponse<String>> logout(
       @Parameter(hidden = true) HttpServletRequest request
   ) {
-    ResponseCookie deleteSessionCookie = userService.signOut(request);
+    List<ResponseCookie> deleteCookies = userService.signOut(request);
 
-    return ResponseEntity.ok()
-        .header(HttpHeaders.SET_COOKIE, deleteSessionCookie.toString())
-        .body(BaseResponse.success(""));
+    ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
+    for (ResponseCookie cookie : deleteCookies) {
+      responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    return responseBuilder.body(BaseResponse.success(""));
   }
 
   @PostMapping("/login")
@@ -181,7 +186,7 @@ public class AuthController {
                         "code": 200,
                         "message": "Success",
                         "data": {
-                          "userId": 1
+                          "csrfToken": "csrf-token-value"
                         }
                       }
                       """
@@ -237,13 +242,13 @@ public class AuthController {
           )
       )
   })
-  public ResponseEntity<BaseResponse<?>> login(
+  public ResponseEntity<BaseResponse<LoginUserResponse>> login(
       @Valid @RequestBody LoginUserRequest request,
       @Parameter(hidden = true) HttpServletRequest httpRequest
   ) {
-    userService.login(request, httpRequest);
+    LoginUserResponse response = userService.login(request, httpRequest);
 
-    return ResponseEntity.ok(BaseResponse.success(""));
+    return ResponseEntity.ok(BaseResponse.success(response));
   }
 
   @PostMapping("/unique")

@@ -2,7 +2,11 @@ package com.example.pintbackend.config;
 
 import com.example.pintbackend.dto.common.response.BaseResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,8 +25,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -49,8 +54,7 @@ public class SecurityConfig {
             .ignoringRequestMatchers(
                 "/auth/login", "/auth/signup", "/auth/signout", "/auth/unique",
                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                "/actuator/health",
-                "/posts", "/posts/**" // 임시로 추가
+                "/actuator/health"
                 )
         )
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -79,11 +83,11 @@ public class SecurityConfig {
             .maximumSessions(1) // 하나의 계정당 1개의 세션만 허용 (중복 로그인 방지)
             .maxSessionsPreventsLogin(false) // 새로운 기기에서 로그인하면 기존 기기는 로그아웃됨
         )
+        .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
         .authorizeHttpRequests(auth -> auth
                 // 회원가입/로그인 및 swagger는 허용
                 .requestMatchers("/auth/login", "/auth/signup", "/auth/signout", "/auth/unique").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/posts", "/posts/**").permitAll() // 임시로 유저 정보 없이 게시글 관련 테스트를 위해 작성
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated()
         );
@@ -134,6 +138,25 @@ public class SecurityConfig {
     response.getWriter().write(
         objectMapper.writeValueAsString(BaseResponse.fail(status.value(), message))
     );
+  }
+
+  /**
+   *
+   */
+  private static final class CsrfCookieFilter extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain filterChain
+    ) throws ServletException, IOException {
+      CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+      if (csrfToken != null) {
+        csrfToken.getToken();
+      }
+      filterChain.doFilter(request, response);
+    }
   }
 
 }

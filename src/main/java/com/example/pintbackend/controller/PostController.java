@@ -9,8 +9,6 @@
  */
 
 package com.example.pintbackend.controller;
-
-import com.example.pintbackend.domain.Post;
 import com.example.pintbackend.dto.common.response.BaseResponse;
 import com.example.pintbackend.dto.postDto.CreatePostRequest;
 import com.example.pintbackend.dto.postDto.PostImageResponse;
@@ -18,12 +16,12 @@ import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.UpdatePostRequest;
 import com.example.pintbackend.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import javax.print.attribute.standard.Media;
 import java.io.IOException;
 import java.util.List;
 
@@ -36,9 +34,12 @@ public class PostController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "포스트 작성")
-    public ResponseEntity<BaseResponse<?>> createPost(@ModelAttribute CreatePostRequest request) throws IOException {
+    public ResponseEntity<BaseResponse<?>> createPost(
+        @ModelAttribute CreatePostRequest request,
+        @Parameter(hidden = true) Authentication authentication
+    ) throws IOException {
 
-        postService.createPost(request);
+        postService.createPost(request, authentication);
 
         return ResponseEntity.ok(BaseResponse.success("포스트 가 작성되였습니다!"));
     }
