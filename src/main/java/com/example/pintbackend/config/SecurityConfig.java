@@ -1,11 +1,16 @@
 package com.example.pintbackend.config;
 
+import com.example.pintbackend.dto.common.response.BaseResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -27,6 +32,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+  private final ObjectMapper objectMapper;
 
   @Value("${cors.allowed-origins}")
   private String allowedOrigins;
@@ -50,6 +57,22 @@ public class SecurityConfig {
         .httpBasic(AbstractHttpConfigurer::disable) // 기본 인증 로그인 비활성화
         .formLogin(AbstractHttpConfigurer::disable) // 기본 login form 비활성화
         .logout(AbstractHttpConfigurer::disable) // 기본 logout 비활성화
+        .exceptionHandling(exception -> exception
+            .authenticationEntryPoint((request, response, authException) ->
+                writeErrorResponse(
+                    response,
+                    HttpStatus.UNAUTHORIZED,
+                    "로그인이 필요합니다."
+                )
+            )
+            .accessDeniedHandler((request, response, accessDeniedException) ->
+                writeErrorResponse(
+                    response,
+                    HttpStatus.FORBIDDEN,
+                    "접근 권한이 없습니다."
+                )
+            )
+        )
         .headers(c -> c.frameOptions(FrameOptionsConfig::disable).disable()) // X-Frame-Options 비활성화
         .sessionManagement(sm -> sm
             .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
@@ -100,5 +123,17 @@ public class SecurityConfig {
         .toList();
   }
 
+  private void writeErrorResponse(
+      HttpServletResponse response,
+      HttpStatus status,
+      String message
+  ) throws java.io.IOException {
+    response.setStatus(status.value());
+    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setCharacterEncoding("UTF-8");
+    response.getWriter().write(
+        objectMapper.writeValueAsString(BaseResponse.fail(status.value(), message))
+    );
+  }
 
 }
