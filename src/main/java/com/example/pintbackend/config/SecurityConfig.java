@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -34,22 +37,30 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
-        .csrf(
-            AbstractHttpConfigurer::disable) // csrf 비활성화 -> cookie를 사용하지 않으면 꺼도 된다. (cookie를 사용할 경우 httpOnly(XSS 방어), sameSite(CSRF 방어)로 방어해야 한다.)
+        .csrf(csrf -> csrf
+            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            .ignoringRequestMatchers(
+                "/auth/login", "/auth/signup", "/auth/signout",
+                "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
+                "/actuator/health",
+                "/posts", "/posts/**" // 임시로 추가
+                )
+        )
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .httpBasic(AbstractHttpConfigurer::disable) // 기본 인증 로그인 비활성화
         .formLogin(AbstractHttpConfigurer::disable) // 기본 login form 비활성화
         .logout(AbstractHttpConfigurer::disable) // 기본 logout 비활성화
-        .headers(c -> c.frameOptions(
-            FrameOptionsConfig::disable).disable()) // X-Frame-Options 비활성화
-        .sessionManagement(c ->
-            c.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
+        .headers(c -> c.frameOptions(FrameOptionsConfig::disable).disable()) // X-Frame-Options 비활성화
+        .sessionManagement(sm -> sm
+            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            .maximumSessions(1) // 하나의 계정당 1개의 세션만 허용 (중복 로그인 방지)
+            .maxSessionsPreventsLogin(false) // 새로운 기기에서 로그인하면 기존 기기는 로그아웃됨
+        )
         .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // 회원가입/로그인 및 swagger는 허용
-                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/auth/login", "/auth/signup", "/auth/signout").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/posts", "/posts/**").permitAll()
+                .requestMatchers("/posts", "/posts/**").permitAll() // 임시로 유저 정보 없이 게시글 관련 테스트를 위해 작성
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated()
         );
@@ -63,13 +74,18 @@ public class SecurityConfig {
   }
 
   @Bean
+  public AuthenticationManager authenticationManager(
+      AuthenticationConfiguration configuration) throws Exception {
+    return configuration.getAuthenticationManager();
+  }
+
+  @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(parseProperty(allowedOrigins));
     configuration.setAllowedOriginPatterns(parseProperty(allowedOriginPatterns));
-    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
-    configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
     configuration.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,6 +49,13 @@ public class GlobalExceptionHandler {
   public ResponseEntity<BaseResponse<Void>> handleDataIntegrity(DataIntegrityViolationException e) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(BaseResponse.fail(HttpStatus.CONFLICT.value(), "중복된 값이 존재합니다."));
+  }
+
+  // 로그인 인증 실패
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<BaseResponse<Void>> handleAuthentication(AuthenticationException e) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(BaseResponse.fail(HttpStatus.UNAUTHORIZED.value(), "이메일 또는 비밀번호가 올바르지 않습니다."));
   }
 
 
