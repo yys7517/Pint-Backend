@@ -26,12 +26,14 @@ public class PostImageResponse {
     private String description;
     private String imageUrl;
     private String camera;
+    private String location;
 
     public static PostImageResponse from(Post post, String imageUrl) {
         return PostImageResponse.builder()
                 .id(post.getId())
                 .height(post.getHeight())
                 .width(post.getWidth())
+                .location(post.getLocation())
                 .description(post.getDescription())
                 .camera(post.getCamera())
                 .imageUrl(imageUrl)
