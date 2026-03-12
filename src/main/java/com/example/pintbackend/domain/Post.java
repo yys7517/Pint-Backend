@@ -12,13 +12,10 @@
 package com.example.pintbackend.domain;
 
 import com.example.pintbackend.domain.common.BaseEntity;
-import com.sun.jdi.LongType;
+import com.example.pintbackend.domain.user.entity.User;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "posts")
@@ -31,6 +28,10 @@ public class Post extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(name = "description", nullable = false)
     @Size(min=4)
@@ -63,5 +64,9 @@ public class Post extends BaseEntity {
         if (location != null) this.location = location;
         if (imageFileS3Key != null) this.imageFileS3Key = imageFileS3Key;
         if (filterFileS3Key != null) this.filterFileS3Key = filterFileS3Key;
+    }
+
+    public void assignUser(User user) {
+        this.user = user;
     }
 }
