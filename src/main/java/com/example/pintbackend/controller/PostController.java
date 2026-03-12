@@ -64,6 +64,7 @@ public class PostController {
     /**
      * editing post
      */
+
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "포스트 수정하기")
     public ResponseEntity<BaseResponse<?>> updatePost(

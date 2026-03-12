@@ -26,7 +26,6 @@ public class S3Config {
 
     @Bean
     public AmazonS3 amazonS3() {
-
         return AmazonS3ClientBuilder.standard()
                 .withRegion(region)
                 .build();       // 자동으로 credentials 이 IAM 유저로부터 로딩이 된다.

@@ -10,6 +10,7 @@
 
 package com.example.pintbackend.dto.postDto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class UpdatePostRequest {
     private String description;
     private String location;
+    private String camera;
+
+    @Schema(type = "string", format = "binary")
     private MultipartFile image;
+
+    @Schema(type = "string", format = "binary")
     private MultipartFile filter;
 }

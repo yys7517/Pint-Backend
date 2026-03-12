@@ -17,6 +17,8 @@ import com.example.pintbackend.dto.postDto.PostImageResponse;
 import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.UpdatePostRequest;
 import com.example.pintbackend.repository.PostRepository;
+import com.example.pintbackend.service.imageservice.ImageMetadata;
+import com.example.pintbackend.service.imageservice.ImageMetadataService;
 import com.example.pintbackend.service.s3service.S3Service;
 import com.example.pintbackend.service.s3service.XmpAnalysisService;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final S3Service s3Service;
     private final XmpAnalysisService xmpAnalysisService;
+    private final ImageMetadataService imageMetadataService;
 
     /**
      * create post
@@ -45,6 +48,9 @@ public class PostService {
      */
     @Transactional
     public void createPost(CreatePostRequest request) throws IOException {
+
+        // camera info
+        ImageMetadata meta = imageMetadataService.extract(request.getImage());
 
         // key -> actual image url
         String imageKey = s3Service.uploadFile(request.getImage());
@@ -56,6 +62,9 @@ public class PostService {
                 .location(request.getLocation())
                 .imageFileS3Key(imageKey)
                 .filterFileS3Key(fileKey)
+                .width(meta.width())
+                .height(meta.height())
+                .camera(meta.camera())
                 .build();
 
         // DB에 저장하기
@@ -104,24 +113,31 @@ public class PostService {
      * TODO: create editPostById function with description, location, filter(JSON), and camera request
      * TODO: repsonse -> description, location, filter(JSON), camera.
      */
+
     @Transactional
     public void updatePost(Long postId, UpdatePostRequest request) throws IOException {
         Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("ERROR: 수정할 포스트가 없습니다"));
 
-        String newImageKey = null;
-        String newFilterKey = null;
 
+        String ImageKey = post.getImageFileS3Key();
+        String FilterKey = post.getFilterFileS3Key();
+
+        // 이미지 충돌나지 않도록 지우기.
         if (request.getImage() != null && !request.getImage().isEmpty()) {
-            s3Service.deletePost(post.getImageFileS3Key());     // 게시글 만들었을떄 넣었던 이미지 지우기 (충돌 방지)
-            newImageKey = s3Service.uploadFile(request.getImage());
+            s3Service.deletePost(post.getImageFileS3Key());
+            ImageKey = s3Service.uploadFile(request.getImage());
         }
 
         if (request.getFilter() != null && !request.getFilter().isEmpty()) {
-            s3Service.deletePost(post.getFilterFileS3Key());     // 게시글 만들었을떄 넣었던 이미지 지우기 (충돌 방지)
-            newFilterKey = s3Service.uploadFile(request.getFilter());
+            s3Service.deletePost(post.getFilterFileS3Key());
+            FilterKey = s3Service.uploadFile(request.getFilter());
         }
 
-        post.update(request.getDescription(), request.getLocation(), newImageKey, newFilterKey);
+        post.update(request.getDescription(),
+                request.getLocation(),
+                ImageKey,
+                FilterKey
+        );
     }
 
 
