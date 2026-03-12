@@ -40,7 +40,7 @@ public class SecurityConfig {
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .ignoringRequestMatchers(
-                "/auth/login", "/auth/signup", "/auth/signout",
+                "/auth/login", "/auth/signup", "/auth/signout", "/auth/unique",
                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                 "/actuator/health",
                 "/posts", "/posts/**" // 임시로 추가
@@ -58,7 +58,7 @@ public class SecurityConfig {
         )
         .authorizeHttpRequests(auth -> auth
                 // 회원가입/로그인 및 swagger는 허용
-                .requestMatchers("/auth/login", "/auth/signup", "/auth/signout").permitAll()
+                .requestMatchers("/auth/login", "/auth/signup", "/auth/signout", "/auth/unique").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/posts", "/posts/**").permitAll() // 임시로 유저 정보 없이 게시글 관련 테스트를 위해 작성
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
