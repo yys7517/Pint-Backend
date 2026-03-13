@@ -10,10 +10,8 @@
 
 package com.example.pintbackend.dto.postDto;
 
-import com.example.pintbackend.domain.Post;
+import com.example.pintbackend.domain.post.Post;
 import com.example.pintbackend.dto.XmpAnalysisResponse;
-import com.example.pintbackend.dto.user.CustomUserDetails;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

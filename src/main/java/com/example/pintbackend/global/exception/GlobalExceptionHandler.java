@@ -1,5 +1,6 @@
 package com.example.pintbackend.global.exception;
 
+import com.example.pintbackend.domain.post.exception.PostNotFoundException;
 import com.example.pintbackend.domain.user.exception.DuplicateEmailException;
 import com.example.pintbackend.domain.user.exception.UserNotFoundException;
 import com.example.pintbackend.dto.common.response.BaseResponse;
@@ -31,6 +32,27 @@ public class GlobalExceptionHandler {
   public ResponseEntity<BaseResponse<Void>> handleUserNotFound(UserNotFoundException e) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(BaseResponse.fail(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+  }
+
+  // 게시글 조회 실패
+  @ExceptionHandler(PostNotFoundException.class)
+  public ResponseEntity<BaseResponse<Void>> handlePostNotFound(PostNotFoundException e) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(BaseResponse.fail(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+  }
+
+  // 인가 실패
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<BaseResponse<Void>> handleForbidden(ForbiddenException e) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(BaseResponse.fail(HttpStatus.FORBIDDEN.value(), e.getMessage()));
+  }
+
+  // 인증 실패
+  @ExceptionHandler(UnauthorizedException.class)
+  public ResponseEntity<BaseResponse<Void>> handleUnauthorized(UnauthorizedException e) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(BaseResponse.fail(HttpStatus.UNAUTHORIZED.value(), e.getMessage()));
   }
 
   // BAD REQUEST

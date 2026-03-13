@@ -127,7 +127,7 @@ public class S3Service {
     }
 
     /**
-     * 포스트 지우기
+     * 게시글 지우기
      */
 
     public void deletePost(String key) {

@@ -9,7 +9,7 @@
  * Author: jskt
  */
 
-package com.example.pintbackend.domain;
+package com.example.pintbackend.domain.post;
 
 import com.example.pintbackend.domain.common.BaseEntity;
 import com.example.pintbackend.domain.user.entity.User;

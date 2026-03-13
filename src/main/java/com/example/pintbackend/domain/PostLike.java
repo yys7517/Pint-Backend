@@ -5,13 +5,14 @@
  * Outline:
  * post like entity to join with users and posts
  *
- * uniqueConstraint 포스트에 유저가 라이크 누를수있는 회수가 1.
+ * uniqueConstraint 게시글에 유저가 라이크 누를수있는 회수가 1.
  * <p>
  * Author: jskt
  */
 
 package com.example.pintbackend.domain;
 
+import com.example.pintbackend.domain.post.Post;
 import com.example.pintbackend.domain.user.entity.User;
 import jakarta.persistence.*;
 

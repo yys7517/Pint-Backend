@@ -8,7 +8,8 @@
 
 package com.example.pintbackend.service;
 
-import com.example.pintbackend.domain.Post;
+import com.example.pintbackend.domain.post.Post;
+import com.example.pintbackend.domain.post.exception.PostNotFoundException;
 import com.example.pintbackend.domain.user.entity.User;
 import com.example.pintbackend.domain.user.exception.UserNotFoundException;
 import com.example.pintbackend.dto.XmpAnalysisResponse;
@@ -18,6 +19,7 @@ import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.PostUserInfo;
 import com.example.pintbackend.dto.postDto.UpdatePostRequest;
 import com.example.pintbackend.dto.user.CustomUserDetails;
+import com.example.pintbackend.global.exception.ForbiddenException;
 import com.example.pintbackend.repository.PostRepository;
 import com.example.pintbackend.repository.UserRepository;
 import com.example.pintbackend.service.imageservice.ImageMetadata;
@@ -48,7 +50,7 @@ public class PostService {
 
   /**
    * create post
-   * 포스트 만들때는 presigned URL 반환해주기
+   * 게시글 만들때는 presigned URL 반환해주기
    */
   @Transactional
   public void createPost(CreatePostRequest request, CustomUserDetails userDetails)
@@ -110,14 +112,14 @@ public class PostService {
    * getPostById
    */
   public PostResponse getPostById(Long postId, CustomUserDetails userDetails) throws IOException {
-    log.info("포스트를 id 로 불러오는중 {}", postId);
+    log.info("게시글를 id 로 불러오는중 {}", postId);
 
     Post post = postRepository.findById(postId).orElseThrow(() -> {
       log.warn("불러오는 페이지가 없습니다 {}", postId);
-      return new RuntimeException("ERROR: 포스트가 없습니다");
+      return new PostNotFoundException(postId);
     });
 
-    log.info("포스트를 성공적으로 불러왔습니다 {}", postId);
+    log.info("게시글를 성공적으로 불러왔습니다 {}", postId);
 
     String imageUrl = s3Service.getPresignedUrlToRead(post.getImageFileS3Key());
 
@@ -150,11 +152,11 @@ public class PostService {
   @Transactional
   public void updatePost(Long postId, CustomUserDetails userDetails, UpdatePostRequest request) throws IOException {
     Post post = postRepository.findById(postId)
-        .orElseThrow(() -> new RuntimeException("ERROR: 수정할 포스트가 없습니다"));
+        .orElseThrow(() -> new PostNotFoundException(postId));
 
     // 게시글 작성자와 현재 유저가 같나?
     if(!Objects.equals(post.getUser().getId(), userDetails.getUserId())) {
-      throw new RuntimeException("ERROR: 수정할 권한이 없습니다");
+      throw new ForbiddenException("게시글를 수정할 권한이 없습니다.");
     }
 
     String filterKey = post.getFilterFileS3Key();
@@ -187,13 +189,22 @@ public class PostService {
    * deletePost
    */
   @Transactional
-  public void deletePost(Long postId) {
+  public void deletePost(Long postId, CustomUserDetails userDetails) {
     Post post = postRepository.findById(postId)
-        .orElseThrow(() -> new RuntimeException("ERROR: 지울 포스트가 없습니다"));
+        .orElseThrow(() -> new PostNotFoundException(postId));
+
+    // 게시글 작성자와 현재 유저가 같나?
+    if(!Objects.equals(post.getUser().getId(), userDetails.getUserId())) {
+      throw new ForbiddenException("게시글를 삭제할 권한이 없습니다.");
+    }
 
     // S3 에서 지우기
-    s3Service.deletePost(post.getImageFileS3Key());
-    s3Service.deletePost(post.getFilterFileS3Key());
+    if (post.getImageFileS3Key() != null && !post.getImageFileS3Key().isEmpty()) {
+      s3Service.deletePost(post.getImageFileS3Key());
+    }
+    if (post.getFilterFileS3Key() != null && !post.getFilterFileS3Key().isEmpty()) {
+      s3Service.deletePost(post.getFilterFileS3Key());
+    }
 
     // delete in db
     postRepository.delete(post);
