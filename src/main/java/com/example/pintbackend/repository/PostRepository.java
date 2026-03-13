@@ -1,6 +1,6 @@
 package com.example.pintbackend.repository;
 
-import com.example.pintbackend.domain.Post;
+import com.example.pintbackend.domain.post.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

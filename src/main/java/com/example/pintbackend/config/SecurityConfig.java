@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -49,14 +50,16 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
-        .csrf(csrf -> csrf
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-            .ignoringRequestMatchers(
-                "/auth/login", "/auth/signup", "/auth/signout", "/auth/unique",
-                "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                "/actuator/health"
-                )
-        )
+//                .csrf(csrf -> csrf.disable()
+//                  .csrfTokenRepository(csrfTokenRepository())
+//                  .ignoringRequestMatchers(
+//                    "/auth/login", "/auth/signup", "/auth/signout", "/auth/unique",
+//                    "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
+//                    "/actuator/health"
+//    //                "/posts", "/posts/**"
+//                    )
+//                )
+        .csrf(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .httpBasic(AbstractHttpConfigurer::disable) // 기본 인증 로그인 비활성화
         .formLogin(AbstractHttpConfigurer::disable) // 기본 login form 비활성화
@@ -83,13 +86,13 @@ public class SecurityConfig {
             .maximumSessions(1) // 하나의 계정당 1개의 세션만 허용 (중복 로그인 방지)
             .maxSessionsPreventsLogin(false) // 새로운 기기에서 로그인하면 기존 기기는 로그아웃됨
         )
-        .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
         .authorizeHttpRequests(auth -> auth
-                // 회원가입/로그인 및 swagger는 허용
-                .requestMatchers("/auth/login", "/auth/signup", "/auth/signout", "/auth/unique").permitAll()
-                .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .anyRequest().authenticated()
+            // 회원가입/로그인 및 swagger는 허용
+            .requestMatchers("/auth/login", "/auth/signup", "/auth/signout", "/auth/unique")
+            .permitAll()
+            .requestMatchers("/actuator/health").permitAll()
+            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+            .anyRequest().authenticated()
         );
 
     return http.build();

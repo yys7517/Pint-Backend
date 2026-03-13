@@ -1,7 +1,7 @@
 package com.example.pintbackend.domain.user.entity;
 
 
-import com.example.pintbackend.domain.Post;
+import com.example.pintbackend.domain.post.Post;
 import com.example.pintbackend.domain.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

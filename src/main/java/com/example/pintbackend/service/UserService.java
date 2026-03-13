@@ -3,6 +3,7 @@ package com.example.pintbackend.service;
 import com.example.pintbackend.domain.user.entity.User;
 import com.example.pintbackend.domain.user.exception.DuplicateEmailException;
 import com.example.pintbackend.domain.user.exception.UserNotFoundException;
+import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.dto.user.request.LoginUserRequest;
 import com.example.pintbackend.dto.user.response.LoginUserResponse;
 import com.example.pintbackend.repository.UserRepository;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,6 +35,12 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
   private final AuthenticationManager authenticationManager;
   private final S3Service s3Service;
+
+  @Value("${server.servlet.session.cookie.secure:true}")
+  private boolean secureCookie;
+
+  @Value("${server.servlet.session.cookie.same-site:None}")
+  private String sameSite;
 
   // 회원가입 - 기본 제공 save 사용
   @Transactional
@@ -92,21 +100,18 @@ public class UserService {
     if (session != null) session.invalidate();  // 세션 만료
     SecurityContextHolder.clearContext(); // Security 컨텍스트 비우기
 
-    boolean isSecureRequest = request.isSecure();
-    String sameSitePolicy = isSecureRequest ? "None" : "Lax";
-
     ResponseCookie deleteSessionCookie = ResponseCookie.from("JSESSIONID", "")  // 세션 ID 빈 값으로
         .httpOnly(true) // JS에서 접근 불가
-        .secure(isSecureRequest)  //  HTTPS 관련 처리
-        .sameSite(sameSitePolicy) //  HTTPS 관련 처리
+        .secure(secureCookie)
+        .sameSite(sameSite)
         .path("/")
         .maxAge(0)  // 세션 즉시 만료
         .build();
 
     ResponseCookie deleteCsrfCookie = ResponseCookie.from("XSRF-TOKEN", "") // XSRF-TOKEN 빈 값으로
         .httpOnly(false)
-        .secure(isSecureRequest)
-        .sameSite(sameSitePolicy)
+        .secure(secureCookie)
+        .sameSite(sameSite)
         .path("/")
         .maxAge(0)
         .build();
@@ -114,12 +119,9 @@ public class UserService {
     return List.of(deleteSessionCookie, deleteCsrfCookie);
   }
 
-  public String getProfileImg(String email) {
-    User user = userRepository.findByEmail(email).orElseThrow(
-        () -> new UserNotFoundException(email)
-    );
+  public String getProfileImg(CustomUserDetails userDetails) {
 
-    String profileImageKey = user.getProfileImageS3Key();
+    String profileImageKey = userDetails.getProfileImageS3Key();
     log.info("profileImageKey = {}", profileImageKey);
     String profileImgUrl = "";
     if(profileImageKey != null) {

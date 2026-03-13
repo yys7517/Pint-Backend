@@ -10,8 +10,9 @@
 
 package com.example.pintbackend.service;
 
-import com.example.pintbackend.domain.Post;
+
 import com.example.pintbackend.domain.PostLike;
+import com.example.pintbackend.domain.post.Post;
 import com.example.pintbackend.domain.user.entity.User;
 import com.example.pintbackend.dto.postDto.LikeResponse;
 import com.example.pintbackend.repository.PostLikeRepository;

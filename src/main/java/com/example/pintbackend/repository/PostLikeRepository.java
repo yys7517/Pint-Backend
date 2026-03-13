@@ -1,6 +1,6 @@
 package com.example.pintbackend.repository;
 
-import com.example.pintbackend.domain.Post;
+import com.example.pintbackend.domain.post.Post;
 import com.example.pintbackend.domain.PostLike;
 import com.example.pintbackend.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,7 +21,7 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 
     long countByPost(Post post);                                    // likeCount (single)
 
-    // 모든 포스트 불러올때 쿼리, avoids N + 1
+    // 모든 게시글 불러올때 쿼리, avoids N + 1
     // likes per post
     @Query("""
                         SELECT pl.post.id, COUNT(pl)

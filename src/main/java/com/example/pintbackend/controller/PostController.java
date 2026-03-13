@@ -11,16 +11,17 @@
 package com.example.pintbackend.controller;
 import com.example.pintbackend.dto.common.response.BaseResponse;
 import com.example.pintbackend.dto.postDto.CreatePostRequest;
+import com.example.pintbackend.dto.postDto.GetAllPostResponse;
 import com.example.pintbackend.dto.postDto.PostImageResponse;
 import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.UpdatePostRequest;
+import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
@@ -33,57 +34,64 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "포스트 작성")
+    @Operation(summary = "게시글 작성")
     public ResponseEntity<BaseResponse<?>> createPost(
         @ModelAttribute CreatePostRequest request,
-        @Parameter(hidden = true) Authentication authentication
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) throws IOException {
 
-        postService.createPost(request, authentication);
+        postService.createPost(request, userDetails);
 
-        return ResponseEntity.ok(BaseResponse.success("포스트 가 작성되였습니다!"));
+        return ResponseEntity.ok(BaseResponse.success("게시글 가 작성되였습니다!"));
     }
 
     @GetMapping
-    @Operation(summary = "모든 포스트 조회")
-    public ResponseEntity<BaseResponse<List<PostImageResponse>>> getAllPost() {
-
+    @Operation(summary = "모든 게시글 조회")
+    public ResponseEntity<BaseResponse<GetAllPostResponse>> getAllPost() {
         List<PostImageResponse> posts = postService.getAllPost();
+        GetAllPostResponse response = new GetAllPostResponse(posts);
 
-        return ResponseEntity.ok(BaseResponse.success(posts));
+        return ResponseEntity.ok(BaseResponse.success(response));
     }
 
     @GetMapping("/{postId}")
-    @Operation(summary = "아이디로 포스트 조회")
-    public ResponseEntity<BaseResponse<PostResponse>> getPostById(@PathVariable Long postId) throws IOException {
+    @Operation(summary = "게시글 상세 조회")
+    public ResponseEntity<BaseResponse<PostResponse>> getPostById(
+        @PathVariable Long postId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) throws IOException {
+        PostResponse response = postService.getPostById(postId, userDetails);
 
-        PostResponse post = postService.getPostById(postId);
-
-        return ResponseEntity.ok(BaseResponse.success(post));
+        return ResponseEntity.ok(BaseResponse.success(response));
     }
 
     /**
      * editing post
      */
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "포스트 수정하기")
+    @PutMapping(value = "/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "게시글 수정하기")
     public ResponseEntity<BaseResponse<?>> updatePost(
-            @PathVariable Long id,
-            @ModelAttribute UpdatePostRequest request) throws IOException {
-        postService.updatePost(id, request);
+            @PathVariable Long postId,
+            @ModelAttribute UpdatePostRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) throws IOException {
+        postService.updatePost(postId, userDetails, request);
 
-        return ResponseEntity.ok(BaseResponse.success("포스트가 수정되였습니다!"));
+        return ResponseEntity.ok(BaseResponse.success("게시글가 수정되였습니다!"));
     }
 
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "아이디로 포스트 지우기")
-    public ResponseEntity<BaseResponse<?>> deletePost(@PathVariable Long id) {
+    @DeleteMapping("/{postId}")
+    @Operation(summary = "아이디로 게시글 지우기")
+    public ResponseEntity<BaseResponse<?>> deletePost(
+        @PathVariable Long postId,
+        @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
 
-        postService.deletePost(id);
+        postService.deletePost(postId, userDetails);
 
-        return ResponseEntity.ok(BaseResponse.success("포스트가 정상적으로 지워졌습니다!"));
+        return ResponseEntity.ok(BaseResponse.success("게시글가 정상적으로 지워졌습니다!"));
     }
 
 

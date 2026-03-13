@@ -10,7 +10,7 @@
 
 package com.example.pintbackend.dto.postDto;
 
-import com.example.pintbackend.domain.post.Post;
+import com.example.pintbackend.domain.Post;
 import com.example.pintbackend.dto.XmpAnalysisResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

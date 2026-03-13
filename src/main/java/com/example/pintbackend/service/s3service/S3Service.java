@@ -40,6 +40,10 @@ public class S3Service {
      * MultipartFile 이미지 or XMP 파일을 S3에 업로드하고, s3Key 값을 반환한다.
      */
     public String uploadFile(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("업로드할 파일이 없습니다.");
+        }
+
         // S3 객체 키(경로 + 파일명)를 생성한다.
         String s3Key = buildObjectKey(file);
 
@@ -101,6 +105,10 @@ public class S3Service {
      */
 
     private String resolveExtension(MultipartFile file) {
+        if (file == null) {
+            throw new IllegalArgumentException("업로드할 파일이 없습니다.");
+        }
+
         String originalFilename = file.getOriginalFilename();
         if (originalFilename != null) {
             int dotIndex = originalFilename.lastIndexOf(".");
@@ -127,7 +135,7 @@ public class S3Service {
     }
 
     /**
-     * 포스트 지우기
+     * 게시글 지우기
      */
 
     public void deletePost(String key) {
