@@ -56,14 +56,14 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
-        .csrf(csrf -> csrf
-            .csrfTokenRepository(csrfTokenRepository())
-            .ignoringRequestMatchers(
-                "/auth/login", "/auth/signup", "/auth/signout", "/auth/unique",
-                "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                "/actuator/health"
-//                "/posts", "/posts/**"
-                )
+        .csrf(csrf -> csrf.disable()
+//            .csrfTokenRepository(csrfTokenRepository())
+//            .ignoringRequestMatchers(
+//                "/auth/login", "/auth/signup", "/auth/signout", "/auth/unique",
+//                "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
+//                "/actuator/health"
+////                "/posts", "/posts/**"
+//                )
         )
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .httpBasic(AbstractHttpConfigurer::disable) // 기본 인증 로그인 비활성화
