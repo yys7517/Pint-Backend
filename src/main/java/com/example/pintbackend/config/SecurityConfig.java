@@ -61,8 +61,8 @@ public class SecurityConfig {
             .ignoringRequestMatchers(
                 "/auth/login", "/auth/signup", "/auth/signout", "/auth/unique",
                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
-                "/actuator/health",
-                "/posts", "/posts/**"
+                "/actuator/health"
+//                "/posts", "/posts/**"
                 )
         )
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -97,7 +97,7 @@ public class SecurityConfig {
                 .requestMatchers("/auth/login", "/auth/signup", "/auth/signout", "/auth/unique").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers( "/posts" ,"/posts/**").permitAll()
+//                .requestMatchers( "/posts" ,"/posts/**").permitAll()
 //                .requestMatchers("/posts/**").authenticated()
                 .anyRequest().authenticated()
         );
