@@ -24,6 +24,7 @@ import com.example.pintbackend.service.imageservice.ImageMetadata;
 import com.example.pintbackend.service.imageservice.ImageMetadataService;
 import com.example.pintbackend.service.s3service.S3Service;
 import com.example.pintbackend.service.s3service.XmpAnalysisService;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -147,28 +148,37 @@ public class PostService {
    */
 
   @Transactional
-  public void updatePost(Long postId, UpdatePostRequest request) throws IOException {
+  public void updatePost(Long postId, CustomUserDetails userDetails, UpdatePostRequest request) throws IOException {
     Post post = postRepository.findById(postId)
         .orElseThrow(() -> new RuntimeException("ERROR: 수정할 포스트가 없습니다"));
 
-    String ImageKey = post.getImageFileS3Key();
-    String FilterKey = post.getFilterFileS3Key();
-
-    // 이미지 충돌나지 않도록 지우기.
-    if (request.getImage() != null && !request.getImage().isEmpty()) {
-      s3Service.deletePost(post.getImageFileS3Key());
-      ImageKey = s3Service.uploadFile(request.getImage());
+    // 게시글 작성자와 현재 유저가 같나?
+    if(!Objects.equals(post.getUser().getId(), userDetails.getUserId())) {
+      throw new RuntimeException("ERROR: 수정할 권한이 없습니다");
     }
 
-    if (request.getFilter() != null && !request.getFilter().isEmpty()) {
-      s3Service.deletePost(post.getFilterFileS3Key());
-      FilterKey = s3Service.uploadFile(request.getFilter());
+    String filterKey = post.getFilterFileS3Key();
+    boolean hasExistingFilter = filterKey != null && !filterKey.isEmpty();
+
+    if(request.getFilter() != null && !request.getFilter().isEmpty()) {
+      // Request Filter가 있고, 기존 필터가 있으면 삭제 후, 새 파일 업로드
+      if (hasExistingFilter) {
+        s3Service.deletePost(filterKey);
+      }
+      filterKey = s3Service.uploadFile(request.getFilter());
+    } else {
+      // Request Filter가 없을때
+      if (hasExistingFilter) {  // 기존 필터가 있으면 제거
+        s3Service.deletePost(filterKey);
+      }
+      filterKey = null;
     }
 
-    post.update(request.getDescription(),
+    post.update(
+        request.getDescription(),
         request.getLocation(),
-        ImageKey,
-        FilterKey
+        request.getCamera(),
+        filterKey
     );
   }
 

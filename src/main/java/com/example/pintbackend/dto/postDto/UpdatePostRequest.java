@@ -27,8 +27,5 @@ public class UpdatePostRequest {
     private String camera;
 
     @Schema(type = "string", format = "binary")
-    private MultipartFile image;
-
-    @Schema(type = "string", format = "binary")
     private MultipartFile filter;
 }

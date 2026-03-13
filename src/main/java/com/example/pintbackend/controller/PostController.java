@@ -55,7 +55,7 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    @Operation(summary = "아이디로 포스트 조회")
+    @Operation(summary = "게시글 상세 조회")
     public ResponseEntity<BaseResponse<PostResponse>> getPostById(
         @PathVariable Long postId,
         @AuthenticationPrincipal CustomUserDetails userDetails
@@ -73,8 +73,10 @@ public class PostController {
     @Operation(summary = "포스트 수정하기")
     public ResponseEntity<BaseResponse<?>> updatePost(
             @PathVariable Long id,
-            @ModelAttribute UpdatePostRequest request) throws IOException {
-        postService.updatePost(id, request);
+            @ModelAttribute UpdatePostRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) throws IOException {
+        postService.updatePost(id, userDetails, request);
 
         return ResponseEntity.ok(BaseResponse.success("포스트가 수정되였습니다!"));
     }
