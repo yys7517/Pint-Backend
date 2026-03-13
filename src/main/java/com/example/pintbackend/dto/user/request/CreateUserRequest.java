@@ -12,13 +12,13 @@ public record CreateUserRequest (
     String password,
 
     @NotBlank(message = "닉네임은 필수입니다.")
-    String userName
+    String username
 ) {
   public User toEntity() {
     return User.builder()
         .email(email())
         .password(password())
-        .userName(userName())
+        .username(username())
         .build();
   }
 }

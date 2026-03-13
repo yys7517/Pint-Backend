@@ -34,8 +34,8 @@ public class User extends BaseEntity {
   @Column(nullable = false)
   private String password;
 
-  @Column(name = "username", nullable = false)
-  private String userName;
+  @Column(nullable = false)
+  private String username;
 
   private String city;  // 거주지
 
@@ -48,11 +48,11 @@ public class User extends BaseEntity {
   private final List<Post> posts = new ArrayList<>();
 
   @Builder
-  private User(String email, String password, String userName, String city, String introduction,
+  private User(String email, String password, String username, String city, String introduction,
       String profileImageS3Key) {
     this.email = email;
     this.password = password;
-    this.userName = userName;
+    this.username = username;
     this.city = city;
     this.introduction = introduction;
     this.profileImageS3Key = profileImageS3Key;

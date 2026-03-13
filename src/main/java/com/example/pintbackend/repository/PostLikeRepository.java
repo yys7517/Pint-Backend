@@ -22,12 +22,15 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     long countByPost(Post post);                                    // likeCount (single)
 
     // 모든 포스트 불러올때 쿼리, avoids N + 1
-    @Query("SELECT pl.post.id, COUNT(pl) " +
-            "FROM PostLike pl " +
-            "WHERE pl.post.id " +
-            "IN :postIds " +
-            "GROUP BY pl.post.id")
-    List<Object[]> countByPostIds(@Param("postsIds") List<Long> postIds);
+    // likes per post
+    @Query("""
+                        SELECT pl.post.id, COUNT(pl)
+                        FROM PostLike pl
+                        WHERE pl.post.id
+                        IN :postIds
+                        GROUP BY pl.post.id
+            """)
+    List<Object[]> countByPostIds(@Param("postIds") List<Long> postIds);
 
     @Query("""
                     SELECT pl.post.id FROM PostLike pl
@@ -35,6 +38,7 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
                     IN :postIds
                     AND pl.user = :user
             """)
-    Set<Long> findLikedPostIdsByUser(@Param("postId") List<Long> postIds, @Param("user") User user);
+    Set<Long> findLikedPostIdsByUser(@Param("postIds") List<Long> postIds, @Param("user") User user);
+
 
 }
