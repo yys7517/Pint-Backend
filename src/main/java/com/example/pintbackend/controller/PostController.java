@@ -11,9 +11,11 @@
 package com.example.pintbackend.controller;
 import com.example.pintbackend.dto.common.response.BaseResponse;
 import com.example.pintbackend.dto.postDto.CreatePostRequest;
+import com.example.pintbackend.dto.postDto.GetAllPostResponse;
 import com.example.pintbackend.dto.postDto.PostImageResponse;
 import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.UpdatePostRequest;
+import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
@@ -36,21 +39,21 @@ public class PostController {
     @Operation(summary = "포스트 작성")
     public ResponseEntity<BaseResponse<?>> createPost(
         @ModelAttribute CreatePostRequest request,
-        @Parameter(hidden = true) Authentication authentication
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) throws IOException {
 
-        postService.createPost(request, authentication);
+        postService.createPost(request, userDetails);
 
         return ResponseEntity.ok(BaseResponse.success("포스트 가 작성되였습니다!"));
     }
 
     @GetMapping
     @Operation(summary = "모든 포스트 조회")
-    public ResponseEntity<BaseResponse<List<PostImageResponse>>> getAllPost() {
-
+    public ResponseEntity<BaseResponse<GetAllPostResponse>> getAllPost() {
         List<PostImageResponse> posts = postService.getAllPost();
+        GetAllPostResponse response = new GetAllPostResponse(posts);
 
-        return ResponseEntity.ok(BaseResponse.success(posts));
+        return ResponseEntity.ok(BaseResponse.success(response));
     }
 
     @GetMapping("/{postId}")

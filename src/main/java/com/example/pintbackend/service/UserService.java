@@ -3,6 +3,7 @@ package com.example.pintbackend.service;
 import com.example.pintbackend.domain.user.entity.User;
 import com.example.pintbackend.domain.user.exception.DuplicateEmailException;
 import com.example.pintbackend.domain.user.exception.UserNotFoundException;
+import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.dto.user.request.LoginUserRequest;
 import com.example.pintbackend.dto.user.response.LoginUserResponse;
 import com.example.pintbackend.repository.UserRepository;
@@ -114,12 +115,9 @@ public class UserService {
     return List.of(deleteSessionCookie, deleteCsrfCookie);
   }
 
-  public String getProfileImg(String email) {
-    User user = userRepository.findByEmail(email).orElseThrow(
-        () -> new UserNotFoundException(email)
-    );
+  public String getProfileImg(CustomUserDetails userDetails) {
 
-    String profileImageKey = user.getProfileImageS3Key();
+    String profileImageKey = userDetails.getProfileImageS3Key();
     log.info("profileImageKey = {}", profileImageKey);
     String profileImgUrl = "";
     if(profileImageKey != null) {

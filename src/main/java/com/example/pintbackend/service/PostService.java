@@ -18,6 +18,7 @@ import com.example.pintbackend.dto.postDto.CreatePostRequest;
 import com.example.pintbackend.dto.postDto.PostImageResponse;
 import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.UpdatePostRequest;
+import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.repository.PostRepository;
 import com.example.pintbackend.repository.UserRepository;
 import com.example.pintbackend.service.imageservice.ImageMetadata;
@@ -26,9 +27,6 @@ import com.example.pintbackend.service.s3service.S3Service;
 import com.example.pintbackend.service.s3service.XmpAnalysisService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,11 +49,12 @@ public class PostService {
     /**
      * create post
      * 포스트 만들때는 presigned URL 반환해주기
-     *
      */
     @Transactional
-    public void createPost(CreatePostRequest request, Authentication authentication) throws IOException {
-        String userEmail = authentication.getName();
+    public void createPost(CreatePostRequest request, CustomUserDetails userDetails) throws IOException {
+        String userEmail = userDetails.getEmail();
+
+        // Email로 유저 가져오기
         User user = userRepository.findByEmail(userEmail).orElseThrow(
             () -> new UserNotFoundException(userEmail)
         );
@@ -65,14 +64,20 @@ public class PostService {
 
         // key -> actual image url
         String imageKey = s3Service.uploadFile(request.getImage());
-        String fileKey = s3Service.uploadFile(request.getFilter());
+        String filterKey = null;
+
+        log.info("filterKey : {}", filterKey);
+
+        if(request.getFilter() != null && !request.getFilter().isEmpty()) {
+          filterKey = s3Service.uploadFile(request.getFilter());
+        }
 
         // DTO->Create
         Post post = Post.builder()
                 .description(request.getDescription())
                 .location(request.getLocation())
                 .imageFileS3Key(imageKey)
-                .filterFileS3Key(fileKey)
+                .filterFileS3Key(filterKey)
                 .width(meta.width())
                 .height(meta.height())
                 .camera(meta.camera())
@@ -167,18 +172,5 @@ public class PostService {
 
         // delete in db
         postRepository.delete(post);
-    }
-
-    private User getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null
-                || !authentication.isAuthenticated()
-                || authentication instanceof AnonymousAuthenticationToken) {
-            throw new RuntimeException("ERROR: 로그인한 사용자만 포스트를 작성할 수 있습니다");
-        }
-
-        return userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("ERROR: 로그인 사용자를 찾을 수 없습니다"));
     }
 }

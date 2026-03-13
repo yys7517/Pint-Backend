@@ -10,6 +10,7 @@
 
 package com.example.pintbackend.dto.postDto;
 
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,5 @@ public class CreatePostRequest {
     private String location;
 
     private MultipartFile image;
-    private MultipartFile filter;
-
+    @Nullable private MultipartFile filter;
 }

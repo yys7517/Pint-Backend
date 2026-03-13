@@ -2,17 +2,17 @@ package com.example.pintbackend.controller;
 
 import com.example.pintbackend.dto.header.response.HeaderProfileImgResponse;
 import com.example.pintbackend.dto.common.response.BaseResponse;
+import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.service.UserService;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -136,10 +136,9 @@ public class HeaderController {
       )
   })
   public ResponseEntity<BaseResponse<HeaderProfileImgResponse>> getMyProfileImg(
-      @Parameter(hidden = true) Authentication authentication
+      @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
-    String userEmail = authentication.getName();
-    String profileImgUrl = userService.getProfileImg(userEmail);
+    String profileImgUrl = userService.getProfileImg(userDetails);
     HeaderProfileImgResponse response = new HeaderProfileImgResponse(profileImgUrl);
 
     return ResponseEntity.ok(BaseResponse.success(response));
