@@ -37,5 +37,4 @@ public class PostImageResponse {
                 .imageUrl(imageUrl)
                 .build();
     }
-
 }
