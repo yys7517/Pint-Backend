@@ -194,6 +194,7 @@ public class UserService {
     /**
      * 프로필 수정
      */
+    @Transactional
     public EditProfileResponse editProfile(Long targetUserId, CustomUserDetails userDetails,
                                            EditProfileRequest request) throws IOException {
         // 세션 유저인지 확인하기

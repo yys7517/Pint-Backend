@@ -174,7 +174,7 @@ public class PostService {
 
         PostUserInfo userInfo = new PostUserInfo(
                 userDetails.getUserId(),
-                userDetails.getUsername(),
+                userDetails.getNickname(),
                 userProfileImageUrl,
                 userDetails.getUserId().equals(post.getUser().getId())
         );

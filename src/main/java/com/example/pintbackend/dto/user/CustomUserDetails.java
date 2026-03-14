@@ -49,6 +49,8 @@ public class CustomUserDetails implements UserDetails {
         return password;
     }
 
+    public String getNickname() { return username; }
+
 
     /**
      * UserDetails 가 interface 라, 인터페이스 에 있는 것들은 다 넣어야 한다.
