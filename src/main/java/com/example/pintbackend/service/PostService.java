@@ -15,6 +15,7 @@ import com.example.pintbackend.domain.user.entity.User;
 import com.example.pintbackend.domain.user.exception.UserNotFoundException;
 import com.example.pintbackend.dto.XmpAnalysisResponse;
 import com.example.pintbackend.dto.postDto.CreatePostRequest;
+import com.example.pintbackend.dto.postDto.GetAllPostResponse;
 import com.example.pintbackend.dto.postDto.PostImageResponse;
 import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.PostUserInfo;
@@ -31,6 +32,8 @@ import com.example.pintbackend.service.s3service.XmpAnalysisService;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -103,17 +106,36 @@ public class PostService {
     /**
      * getAllPost Response: presignedUrl, and postId
      */
-    public List<PostImageResponse> getAllPost(CustomUserDetails userDetails) {
+    public GetAllPostResponse getAllPost(CustomUserDetails userDetails, Pageable pageable) {
 
-        List<Post> posts = postRepository.findAll();
+        Page<Post> posts = postRepository.findAll(pageable);
 
-        return posts.stream()
-                .map(post -> PostImageResponse.from(
-                        post,
-                        postLikeRepository.existsByPostIdAndUserId(post.getId(), userDetails.getUserId()),  // 게시글 좋아요 여부
-                        s3Service.getPresignedUrlToRead(post.getImageFileS3Key())
-                ))
+        List<PostImageResponse> content = posts.getContent().stream()
+                .map(post ->
+                        PostImageResponse.from(
+                                post,
+                                postLikeRepository.existsByPostIdAndUserId(post.getId(), userDetails.getUserId()),  // 게시글 좋아요 여부
+                                s3Service.getPresignedUrlToRead(post.getImageFileS3Key()),
+                                new PostUserInfo(   // 게시글 작성자 정보
+                                        post.getUser().getId(),
+                                        post.getUser().getUsername(),
+                                        s3Service.getPresignedUrlToRead(post.getUser().getProfileImageS3Key()),
+                                        post.getUser().getId().equals(userDetails.getUserId())
+                                )
+                        ))
                 .toList();
+
+        return new GetAllPostResponse(
+                content,
+                posts.getNumber(),
+                posts.getSize(),
+                posts.getTotalElements(),
+                posts.getTotalPages(),
+                posts.hasNext(),
+                posts.hasPrevious(),
+                posts.isFirst(),
+                posts.isLast()
+        );
     }
 
     public PostResponse getPostById(Long postId, CustomUserDetails userDetails) throws IOException {
@@ -129,8 +151,10 @@ public class PostService {
         String imageUrl = s3Service.getPresignedUrlToRead(post.getImageFileS3Key());
 
         String userProfileImageUrl = null;
-        if (userDetails.getProfileImageS3Key() != null && !userDetails.getProfileImageS3Key().isEmpty()) {
-            userProfileImageUrl = s3Service.getPresignedUrlToRead(userDetails.getProfileImageS3Key());
+        if (userDetails.getProfileImageS3Key() != null && !userDetails.getProfileImageS3Key()
+                .isEmpty()) {
+            userProfileImageUrl = s3Service.getPresignedUrlToRead(
+                    userDetails.getProfileImageS3Key());
         }
 
         XmpAnalysisResponse xmpToJson = null;
@@ -145,7 +169,8 @@ public class PostService {
                 userDetails.getUserId().equals(post.getUser().getId())
         );
 
-        boolean isLiked = postLikeRepository.existsByPostIdAndUserId(postId, userDetails.getUserId());
+        boolean isLiked = postLikeRepository.existsByPostIdAndUserId(postId,
+                userDetails.getUserId());
 
         // 게시글 좋아요 개수
         int likeCount = postLikeRepository.countByPostId(postId);

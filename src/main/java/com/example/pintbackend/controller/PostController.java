@@ -19,6 +19,9 @@ import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,10 +51,14 @@ public class PostController {
     @GetMapping
     @Operation(summary = "모든 게시글 조회")
     public ResponseEntity<BaseResponse<GetAllPostResponse>> getAllPost(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PageableDefault(
+                    size = 10,
+                    sort = "createdAt",
+                    direction = Direction.DESC
+            ) Pageable pageable
     ) {
-        List<PostImageResponse> posts = postService.getAllPost(userDetails);
-        GetAllPostResponse response = new GetAllPostResponse(posts);
+        GetAllPostResponse response = postService.getAllPost(userDetails, pageable);
 
         return ResponseEntity.ok(BaseResponse.success(response));
     }
