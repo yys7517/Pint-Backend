@@ -3,16 +3,21 @@ package com.example.pintbackend.service;
 import com.example.pintbackend.domain.user.entity.User;
 import com.example.pintbackend.domain.user.exception.DuplicateEmailException;
 import com.example.pintbackend.domain.user.exception.UserNotFoundException;
-import com.example.pintbackend.dto.postDto.profile.MyProfileResponse;
-import com.example.pintbackend.dto.postDto.profile.ProfileImageResponse;
+import com.example.pintbackend.dto.postDto.profile.request.EditProfileRequest;
+import com.example.pintbackend.dto.postDto.profile.response.EditProfileResponse;
+import com.example.pintbackend.dto.postDto.profile.response.MyProfileResponse;
+import com.example.pintbackend.dto.postDto.profile.response.ProfileImageResponse;
 import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.dto.user.request.LoginUserRequest;
 import com.example.pintbackend.dto.user.response.LoginUserResponse;
+import com.example.pintbackend.global.exception.ForbiddenException;
 import com.example.pintbackend.repository.PostLikeRepository;
 import com.example.pintbackend.repository.UserRepository;
 import com.example.pintbackend.service.s3service.S3Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
+import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +33,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -159,7 +165,7 @@ public class UserService {
         log.info("isMe: {}", isMe);
         log.info("targetUserId: {}, sessionUserId: {}", targetUserid, userDetails.getUserId());
 
-        // 내 포스트 불러오기
+        // target user 포스트 불러오기
         List<ProfileImageResponse> postList = user.getPosts().stream()
                 .map(post -> ProfileImageResponse.from(
                         post,
@@ -167,17 +173,53 @@ public class UserService {
                 ))
                 .toList();
 
-        // 내가 좋아한 포스트 불러오기
-        List<ProfileImageResponse> likePostList = postLikeRepository
+        // 내가 좋아한 포스트 불러오기 if isMe is true.
+        List<ProfileImageResponse> likePostList = isMe
+                ? postLikeRepository
                 .findAllLikedPostByUserId(userDetails.getUserId())
                 .stream()
                 .map(post -> ProfileImageResponse.from(
                         post,
                         s3Service.getPresignedUrlToRead(post.getImageFileS3Key())
                 ))
-                .toList();
+                .toList()
+                : List.of();
 
         return MyProfileResponse.from(user, isMe, postList, likePostList);
+    }
+
+    /**
+     * 프로필 수정
+     */
+    public EditProfileResponse editProfile(Long targetUserId, CustomUserDetails userDetails,
+                                           EditProfileRequest request) throws IOException {
+        // 세션 유저인지 확인하기
+        if (!targetUserId.equals(userDetails.getUserId())) {
+            throw new ForbiddenException("본인의 프로필만 수정가능함 (에초에 버튼이 안보여야 정상!)");
+        }
+
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new UserNotFoundException(String.valueOf(targetUserId)));
+
+        // 새로운 이미지가 생성됬으면 이전 사진 S3 에서 지우기
+        String profileImageS3Key = null;
+        if (request.getProfileImage() != null && !request.getProfileImage().isEmpty()) {
+            if (user.getProfileImageS3Key() != null) {
+                s3Service.deletePost(user.getProfileImageS3Key());
+            }
+            profileImageS3Key = s3Service.uploadFile(request.getProfileImage());
+        }
+
+        // null fields are ignored by update() - only provided fields are changed
+        user.update(request.getUsername(), request.getIntroduction(), request.getCity(), profileImageS3Key);
+
+        // after update(), generate preignedURL
+        String profileImageUrl = user.getProfileImageS3Key() != null
+                ? s3Service.getPresignedUrlToRead(user.getProfileImageS3Key())
+                : "";
+
+        return EditProfileResponse.from(user, profileImageUrl);
+
     }
 
 
