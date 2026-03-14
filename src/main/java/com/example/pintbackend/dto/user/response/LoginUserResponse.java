@@ -10,5 +10,4 @@
 
 package com.example.pintbackend.dto.user.response;
 
-public record LoginUserResponse(String csrfToken) {
-}
+public record LoginUserResponse(Long userId) { }

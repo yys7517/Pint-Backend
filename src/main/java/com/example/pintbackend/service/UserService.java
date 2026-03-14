@@ -76,11 +76,20 @@ public class UserService {
     );
 
     // 서블릿 컨테이너가 자동으로 쿠키에 "JSESSIONID", "XSRF-TOKEN"를 설정.
+    // TODO. CSRF 나중에 구현
+    // CsrfToken csrfToken = (CsrfToken) httpRequest.getAttribute(CsrfToken.class.getName());
+    // String csrfTokenValue = csrfToken == null ? "" : csrfToken.getToken();
 
-    CsrfToken csrfToken = (CsrfToken) httpRequest.getAttribute(CsrfToken.class.getName());
-    String csrfTokenValue = csrfToken == null ? "" : csrfToken.getToken();
+    Object principal = authentication.getPrincipal();
+    Long userId = null;
+    if (principal instanceof CustomUserDetails customUserDetails) {
+      userId = customUserDetails.getUserId();
+    } else {
+      // 안전장치: principal 타입이 바뀌었을 때를 대비해 email(=principal name)로 조회
+      userId = getUserId(authentication.getName());
+    }
 
-    return new LoginUserResponse(csrfTokenValue);
+    return new LoginUserResponse(userId);
   }
 
   private Long getUserId(String email) {
