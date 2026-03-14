@@ -140,14 +140,19 @@ public class UserService {
      * Transactional(readOnly=true) keeps hibernate session open
      */
     @Transactional(readOnly = true)
-    public MyProfileResponse getProfile(CustomUserDetails userDetails) {
+    public MyProfileResponse getProfile(Long targetUserid, CustomUserDetails userDetails) {
 
         // 유저 엔티티 불러오기
-        User user = userRepository.findById(userDetails.getUserId())
+        User user = userRepository.findById(targetUserid)
                 .orElseThrow(() -> new UserNotFoundException(userDetails.getEmail()));
 
-        boolean isMe = true;
+        // 세션 유저가 자기 프로필 보고있으면 true
+        boolean isMe = targetUserid.equals(userDetails.getUserId());
 
+        log.info("isMe: {}", isMe);
+        log.info("targetUserId: {}, sessionUserId: {}", targetUserid, userDetails.getUserId());
+
+        // 내 포스트 불러오기
         List<ProfileImageResponse> postList = user.getPosts().stream()
                 .map(post -> ProfileImageResponse.from(
                         post,
@@ -155,6 +160,7 @@ public class UserService {
                 ))
                 .toList();
 
+        // 내가 좋아한 포스트 불러오기
         List<ProfileImageResponse> likePostList = postLikeRepository
                 .findAllLikedPostByUserId(userDetails.getUserId())
                 .stream()

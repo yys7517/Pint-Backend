@@ -16,7 +16,6 @@ import com.example.pintbackend.dto.postDto.GetAllPostResponse;
 import com.example.pintbackend.dto.postDto.PostImageResponse;
 import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.UpdatePostRequest;
-import com.example.pintbackend.dto.postDto.profile.MyProfileResponse;
 import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.service.PostService;
 import com.example.pintbackend.service.UserService;
@@ -100,12 +99,6 @@ public class PostController {
         postService.deletePost(postId, userDetails);
 
         return ResponseEntity.ok(BaseResponse.success("게시글가 정상적으로 지워졌습니다!"));
-    }
-
-    @GetMapping("/me")
-    @Operation(summary = "내 프로필 페이지 상세")
-    public BaseResponse<MyProfileResponse> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return BaseResponse.success(userService.getProfile(userDetails));
     }
 
 
