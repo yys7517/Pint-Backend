@@ -11,8 +11,6 @@
 package com.example.pintbackend.dto.postDto.profile;
 
 import com.example.pintbackend.domain.user.entity.User;
-import com.example.pintbackend.dto.postDto.LikeResponse;
-import com.example.pintbackend.dto.postDto.PostResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,26 +23,26 @@ import java.util.List;
 @AllArgsConstructor
 public class MyProfileResponse {
 
-    private Long id;
     private String username;
     private String introduction;
     private String city;
     private String email;
     private Boolean isMe;
-    private String imageUrl;
 
-    private List<PostResponse> postResponseList;
-    private List<LikeResponse> likeResponseList;
+    // Jackson  이 변수를 JSON Key 로 만든다
+    private List<ProfileImageResponse> postList;        // { postId, imageUrl}
+    private List<ProfileImageResponse> likedPostList;
 
-    public static MyProfileResponse from(User user, String imageUrl, Boolean isMe) {
+    public static MyProfileResponse from(User user,Boolean isMe,
+                                         List<ProfileImageResponse> postList, List<ProfileImageResponse> likedPostList) {
         return MyProfileResponse.builder()
-                .id(user.getId())
                 .username(user.getUsername())
                 .introduction(user.getIntroduction())
                 .city(user.getCity())
                 .email(user.getEmail())
                 .isMe(isMe)
-                .imageUrl(imageUrl)
+                .postList(postList)
+                .likedPostList(likedPostList)
                 .build();
 
     }

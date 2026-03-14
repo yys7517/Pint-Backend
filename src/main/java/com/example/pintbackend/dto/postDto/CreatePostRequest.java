@@ -10,6 +10,7 @@
 
 package com.example.pintbackend.dto.postDto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,6 +27,9 @@ public class CreatePostRequest {
     private String description;
     private String location;
 
+    @Schema(type = "string", format = "binary")
     private MultipartFile image;
-    @Nullable private MultipartFile filter;
+    @Nullable
+    @Schema(type = "string", format = "binary")
+    private MultipartFile filter;
 }

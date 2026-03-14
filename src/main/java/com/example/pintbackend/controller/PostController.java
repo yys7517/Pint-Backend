@@ -9,6 +9,7 @@
  */
 
 package com.example.pintbackend.controller;
+
 import com.example.pintbackend.dto.common.response.BaseResponse;
 import com.example.pintbackend.dto.postDto.CreatePostRequest;
 import com.example.pintbackend.dto.postDto.GetAllPostResponse;
@@ -17,12 +18,14 @@ import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.UpdatePostRequest;
 import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.service.PostService;
+import com.example.pintbackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -32,12 +35,14 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final UserService userService;
 
+    // @ModelAttribute doesnt work with swagger
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "게시글 작성")
     public ResponseEntity<BaseResponse<?>> createPost(
-        @ModelAttribute CreatePostRequest request,
-        @AuthenticationPrincipal CustomUserDetails userDetails
+            @ModelAttribute CreatePostRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) throws IOException {
 
         postService.createPost(request, userDetails);
@@ -59,8 +64,8 @@ public class PostController {
     @GetMapping("/{postId}")
     @Operation(summary = "게시글 상세 조회")
     public ResponseEntity<BaseResponse<PostResponse>> getPostById(
-        @PathVariable Long postId,
-        @AuthenticationPrincipal CustomUserDetails userDetails
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) throws IOException {
         PostResponse response = postService.getPostById(postId, userDetails);
 
@@ -87,8 +92,8 @@ public class PostController {
     @DeleteMapping("/{postId}")
     @Operation(summary = "아이디로 게시글 지우기")
     public ResponseEntity<BaseResponse<?>> deletePost(
-        @PathVariable Long postId,
-        @AuthenticationPrincipal CustomUserDetails userDetails
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
 
         postService.deletePost(postId, userDetails);

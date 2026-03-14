@@ -21,12 +21,13 @@ import lombok.Getter;
 
 public class ProfileImageResponse {
 
-    private Long id;
+    private Long postId;
     private String imageUrl;
 
+    // mappping 로직을 DTO 에 두기 위해 from 을 쓴다
     public static ProfileImageResponse from(Post post, String imageUrl) {
         return ProfileImageResponse.builder()
-                .id(post.getId())
+                .postId(post.getId())
                 .imageUrl(imageUrl)
                 .build();
     }
