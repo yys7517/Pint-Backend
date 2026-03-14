@@ -162,9 +162,9 @@ public class PostService {
         String imageUrl = resolvePresignedUrl(post.getImageFileS3Key());
 
         String userProfileImageUrl = null;
-        if (userDetails.getProfileImageS3Key() != null && !userDetails.getProfileImageS3Key()
+        if (post.getUser().getProfileImageS3Key() != null && !post.getUser().getProfileImageS3Key()
                 .isEmpty()) {
-            userProfileImageUrl = resolvePresignedUrl(userDetails.getProfileImageS3Key());
+            userProfileImageUrl = resolvePresignedUrl(post.getUser().getProfileImageS3Key());
         }
 
         XmpAnalysisResponse xmpToJson = null;
@@ -172,9 +172,10 @@ public class PostService {
             xmpToJson = xmpAnalysisService.analyze(post.getFilterFileS3Key());
         }
 
+        // 게시글 작성자 정보
         PostUserInfo userInfo = new PostUserInfo(
-                userDetails.getUserId(),
-                userDetails.getNickname(),
+                post.getUser().getId(),
+                post.getUser().getUsername(),
                 userProfileImageUrl,
                 userDetails.getUserId().equals(post.getUser().getId())
         );
