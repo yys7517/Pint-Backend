@@ -6,7 +6,7 @@ import com.example.pintbackend.domain.user.exception.UserNotFoundException;
 import com.example.pintbackend.dto.postDto.profile.request.EditProfileRequest;
 import com.example.pintbackend.dto.postDto.profile.response.EditProfileResponse;
 import com.example.pintbackend.dto.postDto.profile.response.MyProfileResponse;
-import com.example.pintbackend.dto.postDto.profile.response.ProfileImageResponse;
+import com.example.pintbackend.dto.postDto.profile.response.ProfilePostResponse;
 import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.dto.user.request.LoginUserRequest;
 import com.example.pintbackend.dto.user.response.LoginUserResponse;
@@ -29,11 +29,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -165,27 +163,32 @@ public class UserService {
         log.info("isMe: {}", isMe);
         log.info("targetUserId: {}, sessionUserId: {}", targetUserid, userDetails.getUserId());
 
+        String profileImageUrl = null;
+        if(user.getProfileImageS3Key() != null) {
+            profileImageUrl = s3Service.getPresignedUrlToRead(user.getProfileImageS3Key());
+        }
+
         // target user 포스트 불러오기
-        List<ProfileImageResponse> postList = user.getPosts().stream()
-                .map(post -> ProfileImageResponse.from(
+        List<ProfilePostResponse> postList = user.getPosts().stream()
+                .map(post -> ProfilePostResponse.from(
                         post,
                         s3Service.getPresignedUrlToRead(post.getCompressedImageFileS3Key() != null ? post.getCompressedImageFileS3Key() : post.getImageFileS3Key())
                 ))
                 .toList();
 
         // 내가 좋아한 포스트 불러오기 if isMe is true.
-        List<ProfileImageResponse> likePostList = isMe
+        List<ProfilePostResponse> likePostList = isMe
                 ? postLikeRepository
                 .findAllLikedPostByUserId(userDetails.getUserId())
                 .stream()
-                .map(post -> ProfileImageResponse.from(
+                .map(post -> ProfilePostResponse.from(
                         post,
                         s3Service.getPresignedUrlToRead(post.getCompressedImageFileS3Key() != null ? post.getCompressedImageFileS3Key() : post.getImageFileS3Key())
                 ))
                 .toList()
                 : List.of();
 
-        return MyProfileResponse.from(user, isMe, postList, likePostList);
+        return MyProfileResponse.from(user, profileImageUrl, isMe, postList, likePostList);
     }
 
     /**

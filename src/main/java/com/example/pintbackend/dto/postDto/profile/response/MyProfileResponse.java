@@ -28,19 +28,21 @@ public class MyProfileResponse {
     private String city;
     private String email;
     private Boolean isMe;
+    private String profileImageUrl;
 
     // Jackson  이 변수를 JSON Key 로 만든다
-    private List<ProfileImageResponse> postList;        // { postId, imageUrl}
-    private List<ProfileImageResponse> likedPostList;
+    private List<ProfilePostResponse> postList;        // { postId, imageUrl}
+    private List<ProfilePostResponse> likedPostList;
 
-    public static MyProfileResponse from(User user,Boolean isMe,
-                                         List<ProfileImageResponse> postList, List<ProfileImageResponse> likedPostList) {
+    public static MyProfileResponse from(User user, String profileImageUrl, Boolean isMe,
+                                         List<ProfilePostResponse> postList, List<ProfilePostResponse> likedPostList) {
         return MyProfileResponse.builder()
                 .username(user.getUsername())
                 .introduction(user.getIntroduction())
                 .city(user.getCity())
                 .email(user.getEmail())
                 .isMe(isMe)
+                .profileImageUrl(profileImageUrl)
                 .postList(postList)
                 .likedPostList(likedPostList)
                 .build();
