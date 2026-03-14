@@ -1,6 +1,7 @@
 package com.example.pintbackend.repository;
 
 import com.example.pintbackend.domain.PostLike;
+import com.example.pintbackend.domain.post.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Repository
 public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
@@ -21,9 +21,11 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
 
     // TODO. 내 프로필 좋아요 목록
     @Query("""
-          SELECT pl.post.id
-          FROM PostLike pl
-          WHERE pl.user.id = :userId
-          """)
-    Set<Long> findAllLikedPostIdsByUserId(@Param("userId") Long userId);
+            SELECT p FROM PostLike pl
+            JOIN pl.post p
+            WHERE pl.user.id = :userId
+            """)
+    List<Post> findAllLikedPostByUserId(@Param("userId") Long userId);
+
+
 }

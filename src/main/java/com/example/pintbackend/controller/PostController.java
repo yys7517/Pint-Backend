@@ -15,8 +15,10 @@ import com.example.pintbackend.dto.postDto.GetAllPostResponse;
 import com.example.pintbackend.dto.postDto.PostImageResponse;
 import com.example.pintbackend.dto.postDto.PostResponse;
 import com.example.pintbackend.dto.postDto.UpdatePostRequest;
+import com.example.pintbackend.dto.postDto.profile.MyProfileResponse;
 import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.service.PostService;
+import com.example.pintbackend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -32,6 +34,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final UserService userService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "게시글 작성")
@@ -94,6 +97,11 @@ public class PostController {
         postService.deletePost(postId, userDetails);
 
         return ResponseEntity.ok(BaseResponse.success("게시글가 정상적으로 지워졌습니다!"));
+    }
+
+    @GetMapping("/me")
+    public BaseResponse<MyProfileResponse> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return BaseResponse.success(userService.getProfile(userDetails));
     }
 
 
