@@ -55,6 +55,9 @@ public class Post extends BaseEntity {
     @Column(name = "image", nullable = false)
     private String imageFileS3Key;
 
+    @Column(name = "compressed_image")
+    private String compressedImageFileS3Key;
+
     @Column(name = "filter")
     private String filterFileS3Key;
 

@@ -169,7 +169,7 @@ public class UserService {
         List<ProfileImageResponse> postList = user.getPosts().stream()
                 .map(post -> ProfileImageResponse.from(
                         post,
-                        s3Service.getPresignedUrlToRead(post.getImageFileS3Key())
+                        s3Service.getPresignedUrlToRead(post.getCompressedImageFileS3Key())
                 ))
                 .toList();
 
@@ -180,7 +180,7 @@ public class UserService {
                 .stream()
                 .map(post -> ProfileImageResponse.from(
                         post,
-                        s3Service.getPresignedUrlToRead(post.getImageFileS3Key())
+                        s3Service.getPresignedUrlToRead(post.getCompressedImageFileS3Key())
                 ))
                 .toList()
                 : List.of();

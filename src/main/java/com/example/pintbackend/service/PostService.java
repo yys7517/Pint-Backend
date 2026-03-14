@@ -25,6 +25,7 @@ import com.example.pintbackend.global.exception.ForbiddenException;
 import com.example.pintbackend.repository.PostLikeRepository;
 import com.example.pintbackend.repository.PostRepository;
 import com.example.pintbackend.repository.UserRepository;
+import com.example.pintbackend.service.imageservice.ImageCompressionService;
 import com.example.pintbackend.service.imageservice.ImageMetadata;
 import com.example.pintbackend.service.imageservice.ImageMetadataService;
 import com.example.pintbackend.service.s3service.S3Service;
@@ -55,6 +56,7 @@ public class PostService {
     private final S3Service s3Service;
     private final XmpAnalysisService xmpAnalysisService;
     private final ImageMetadataService imageMetadataService;
+    private final ImageCompressionService imageCompressionService;
 
     /**
      * create post 게시글 만들때는 presigned URL 반환해주기
@@ -77,8 +79,15 @@ public class PostService {
         // camera info
         ImageMetadata meta = imageMetadataService.extract(image);
 
-        // key -> actual image url
+        // upload original
         String imageKey = s3Service.uploadFile(image);
+        
+        // 압축, 그리고 s3버킷에 올리기
+        byte[] compressedBytes = imageCompressionService.compress(image);
+        log.info("[ImageCompression] original bytes: {}", image.getSize());
+        log.info("[ImageCompression] original: {} KB, compressed: {} KB", image.getSize() / 1024, compressedBytes.length / 1024);
+        String compressedImageKey = s3Service.uploadCompressedImage(compressedBytes);
+
         String filterKey = null;
 
         log.info("filterKey : {}", filterKey);
@@ -92,6 +101,7 @@ public class PostService {
                 .description(request.getDescription())
                 .location(request.getLocation())
                 .imageFileS3Key(imageKey)
+                .compressedImageFileS3Key(compressedImageKey)
                 .filterFileS3Key(filterKey)
                 .width(meta.width())
                 .height(meta.height())
@@ -116,7 +126,7 @@ public class PostService {
                         PostImageResponse.from(
                                 post,
                                 postLikeRepository.existsByPostIdAndUserId(post.getId(), userDetails.getUserId()),  // 게시글 좋아요 여부
-                                resolvePresignedUrl(post.getImageFileS3Key()),
+                                resolvePresignedUrl(post.getCompressedImageFileS3Key()),
                                 new PostUserInfo(   // 게시글 작성자 정보
                                         post.getUser().getId(),
                                         post.getUser().getUsername(),
@@ -244,6 +254,9 @@ public class PostService {
         // S3 에서 지우기
         if (post.getImageFileS3Key() != null && !post.getImageFileS3Key().isEmpty()) {
             s3Service.deletePost(post.getImageFileS3Key());
+        }
+        if (post.getCompressedImageFileS3Key() != null && !post.getCompressedImageFileS3Key().isEmpty()) {
+            s3Service.deletePost(post.getCompressedImageFileS3Key());
         }
         if (post.getFilterFileS3Key() != null && !post.getFilterFileS3Key().isEmpty()) {
             s3Service.deletePost(post.getFilterFileS3Key());

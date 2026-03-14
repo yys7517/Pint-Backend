@@ -88,6 +88,24 @@ public class S3Service {
         return s3Presigner.presignGetObject(presignRequest).url().toString();
     }
 
+    /**
+     * s3 버킷에 압춘된 이미지 JPEGG 로 저장,
+     */
+    public String uploadCompressedImage(byte[] data) {
+        String s3Key = "images/compressed/" + UUID.randomUUID() + ".jpg";
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(s3Key)
+                .contentType("image/jpeg")
+                .contentLength((long) data.length)
+                .build();
+
+        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(data));
+
+        return s3Key;
+    }
+
     public void deletePost(String key) {
         s3Client.deleteObject(DeleteObjectRequest.builder()
                 .bucket(bucket)

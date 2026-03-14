@@ -51,5 +51,8 @@ dependencies {
 	// metadata-extractor library
 	implementation 'com.drewnoakes:metadata-extractor:2.19.0'
 
+	// image compression
+	implementation 'net.coobird:thumbnailator:0.4.20'
+
 }
 
