@@ -13,9 +13,7 @@ import com.example.pintbackend.repository.UserRepository;
 import com.example.pintbackend.service.s3service.S3Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,88 +40,97 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final S3Service s3Service;
 
-    @Value("${server.servlet.session.cookie.secure:true}")
-    private boolean secureCookie;
+  @Value("${server.servlet.session.cookie.secure:true}")
+  private boolean secureCookie;
 
-    @Value("${server.servlet.session.cookie.same-site:None}")
-    private String sameSite;
+  @Value("${server.servlet.session.cookie.same-site:None}")
+  private String sameSite;
 
-    // 회원가입 - 기본 제공 save 사용
-    @Transactional
-    public void signupUser(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new DuplicateEmailException(user.getEmail());
-        }
-
-        // password encoding
-        user.encodePassword(passwordEncoder.encode(user.getPassword()));
-
-        userRepository.save(user);
+  // 회원가입 - 기본 제공 save 사용
+  @Transactional
+  public void signupUser(User user) {
+    if (userRepository.existsByEmail(user.getEmail())) {
+      throw new DuplicateEmailException(user.getEmail());
     }
 
-    @Transactional
-    public LoginUserResponse login(LoginUserRequest request, HttpServletRequest httpRequest) {
-        // 1. 유저 인증 시도
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
-        );
+    // password encoding
+    user.encodePassword(passwordEncoder.encode(user.getPassword()));
 
-        // 인증 성공 시, Security에 컨텍스트에 유저 인증 정보 설정
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
+    userRepository.save(user);
+  }
 
-        // 세션 생성 및 세션 ID 설정
-        HttpSession session = httpRequest.getSession(true);
-        httpRequest.changeSessionId(); // 로그인 성공 후 세션 ID 교체
+  @Transactional
+  public LoginUserResponse login(LoginUserRequest request, HttpServletRequest httpRequest) {
+    // 1. 유저 인증 시도
+    Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(request.email(), request.password())
+    );
 
-        session.setAttribute(
-                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context
-        );
+    // 인증 성공 시, Security에 컨텍스트에 유저 인증 정보 설정
+    SecurityContext context = SecurityContextHolder.createEmptyContext();
+    context.setAuthentication(authentication);
+    SecurityContextHolder.setContext(context);
 
-        // 서블릿 컨테이너가 자동으로 쿠키에 "JSESSIONID", "XSRF-TOKEN"를 설정.
+    // 세션 생성 및 세션 ID 설정
+    HttpSession session = httpRequest.getSession(true);
+    httpRequest.changeSessionId(); // 로그인 성공 후 세션 ID 교체
 
-        CsrfToken csrfToken = (CsrfToken) httpRequest.getAttribute(CsrfToken.class.getName());
-        String csrfTokenValue = csrfToken == null ? "" : csrfToken.getToken();
+    session.setAttribute(
+        HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context
+    );
 
-        return new LoginUserResponse(csrfTokenValue);
+    // 서블릿 컨테이너가 자동으로 쿠키에 "JSESSIONID", "XSRF-TOKEN"를 설정.
+    // TODO. CSRF 나중에 구현
+    // CsrfToken csrfToken = (CsrfToken) httpRequest.getAttribute(CsrfToken.class.getName());
+    // String csrfTokenValue = csrfToken == null ? "" : csrfToken.getToken();
+
+    Object principal = authentication.getPrincipal();
+    Long userId = null;
+    if (principal instanceof CustomUserDetails customUserDetails) {
+      userId = customUserDetails.getUserId();
+    } else {
+      // 안전장치: principal 타입이 바뀌었을 때를 대비해 email(=principal name)로 조회
+      userId = getUserId(authentication.getName());
     }
 
-    private Long getUserId(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UserNotFoundException(email)
-        );
+    return new LoginUserResponse(userId);
+  }
 
-        return user.getId();
-    }
+  private Long getUserId(String email) {
+    User user = userRepository.findByEmail(email).orElseThrow(
+        () -> new UserNotFoundException(email)
+    );
 
-    public boolean isAvailableEmail(String email) {
-        return !userRepository.existsByEmail(email);  // email을 쓰는 유저가 이미 존재하면 false값 반환
-    }
+    return user.getId();
+  }
 
-    public List<ResponseCookie> signOut(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);  // 세션 가져오기
-        if (session != null) session.invalidate();  // 세션 만료
-        SecurityContextHolder.clearContext(); // Security 컨텍스트 비우기
+  public boolean isAvailableEmail(String email) {
+    return !userRepository.existsByEmail(email);  // email을 쓰는 유저가 이미 존재하면 false값 반환
+  }
 
-        ResponseCookie deleteSessionCookie = ResponseCookie.from("JSESSIONID", "")  // 세션 ID 빈 값으로
-                .httpOnly(true) // JS에서 접근 불가
-                .secure(secureCookie)
-                .sameSite(sameSite)
-                .path("/")
-                .maxAge(0)  // 세션 즉시 만료
-                .build();
+  public List<ResponseCookie> signOut(HttpServletRequest request) {
+    HttpSession session = request.getSession(false);  // 세션 가져오기
+    if (session != null) session.invalidate();  // 세션 만료
+    SecurityContextHolder.clearContext(); // Security 컨텍스트 비우기
 
-        ResponseCookie deleteCsrfCookie = ResponseCookie.from("XSRF-TOKEN", "") // XSRF-TOKEN 빈 값으로
-                .httpOnly(false)
-                .secure(secureCookie)
-                .sameSite(sameSite)
-                .path("/")
-                .maxAge(0)
-                .build();
+    ResponseCookie deleteSessionCookie = ResponseCookie.from("JSESSIONID", "")  // 세션 ID 빈 값으로
+        .httpOnly(true) // JS에서 접근 불가
+        .secure(secureCookie)
+        .sameSite(sameSite)
+        .path("/")
+        .maxAge(0)  // 세션 즉시 만료
+        .build();
 
-        return List.of(deleteSessionCookie, deleteCsrfCookie);
-    }
+    ResponseCookie deleteCsrfCookie = ResponseCookie.from("XSRF-TOKEN", "") // XSRF-TOKEN 빈 값으로
+        .httpOnly(false)
+        .secure(secureCookie)
+        .sameSite(sameSite)
+        .path("/")
+        .maxAge(0)
+        .build();
+
+    return List.of(deleteSessionCookie, deleteCsrfCookie);
+  }
 
     public String getProfileImg(CustomUserDetails userDetails) {
 

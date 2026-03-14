@@ -186,7 +186,8 @@ public class AuthController {
                         "code": 200,
                         "message": "Success",
                         "data": {
-                          "csrfToken": "csrf-token-value"
+                          "userId": 1
+                          // "csrfToken": "csrf-token-value"
                         }
                       }
                       """
