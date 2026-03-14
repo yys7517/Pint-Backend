@@ -88,4 +88,11 @@ public class User extends BaseEntity {
     likes.remove(postLike);
     postLike.assignUser(null);
   }
+
+  public void update(String username, String introduction, String city, String profileImageS3Key) {
+    if (username != null) this.username = username;
+    if (introduction != null) this.introduction = introduction;
+    if (city != null) this.city = city;
+    if (profileImageS3Key != null) this.profileImageS3Key = profileImageS3Key;
+  }
 }

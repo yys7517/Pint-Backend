@@ -8,7 +8,7 @@
  * Author: jskt
  */
 
-package com.example.pintbackend.dto.postDto.profile;
+package com.example.pintbackend.dto.postDto.profile.response;
 
 import com.example.pintbackend.domain.post.Post;
 import lombok.AllArgsConstructor;
