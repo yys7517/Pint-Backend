@@ -11,10 +11,13 @@
 
 package com.example.pintbackend.domain.post;
 
+import com.example.pintbackend.domain.PostLike;
 import com.example.pintbackend.domain.common.BaseEntity;
 import com.example.pintbackend.domain.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
 
 @Entity
@@ -55,6 +58,10 @@ public class Post extends BaseEntity {
     @Column(name = "filter")
     private String filterFileS3Key;
 
+  @Builder.Default
+  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+  private final List<PostLike> likes = new ArrayList<>();
+
     // 수정 method in post entity
     public void update(String description, String location, String camera, String filterFileS3Key) {
         /**
@@ -68,5 +75,19 @@ public class Post extends BaseEntity {
 
     public void assignUser(User user) {
         this.user = user;
+    }
+
+    public void addLike(PostLike postLike) {
+        if (likes.contains(postLike)) {
+            return;
+        }
+
+        likes.add(postLike);
+        postLike.assignPost(this);
+    }
+
+    public void removeLike(PostLike postLike) {
+        likes.remove(postLike);
+        postLike.assignPost(null);
     }
 }

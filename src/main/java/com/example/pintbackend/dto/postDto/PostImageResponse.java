@@ -1,40 +1,29 @@
-/**
- * File: null.java
- * Path: com.example.pintbackend.dto.postDto
- * <p>
- * Outline:
- * only to return post id and image url, and now height, width, and
- * <p>
- * Author: jskt
- */
-
 package com.example.pintbackend.dto.postDto;
 
 import com.example.pintbackend.domain.post.Post;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Getter
-@Builder
-@AllArgsConstructor
-public class PostImageResponse {
+public record PostImageResponse(
+    Long id,
+    Long height,
+    Long width,
+    String imageUrl,
+    String camera,
+    String location,
+    int likeCount,
+    @JsonProperty("isLiked") boolean isLiked
+) {
 
-    private Long id;
-    private Long height;
-    private Long width;
-    private String imageUrl;
-    private String camera;
-    private String location;
-
-    public static PostImageResponse from(Post post, String imageUrl) {
-        return PostImageResponse.builder()
-                .id(post.getId())
-                .height(post.getHeight())
-                .width(post.getWidth())
-                .location(post.getLocation())
-                .camera(post.getCamera())
-                .imageUrl(imageUrl)
-                .build();
-    }
+  public static PostImageResponse from(Post post, boolean isLiked, String imageUrl) {
+    return new PostImageResponse(
+        post.getId(),
+        post.getHeight(),
+        post.getWidth(),
+        imageUrl,
+        post.getCamera(),
+        post.getLocation(),
+        post.getLikes().size(),
+        isLiked
+    );
+  }
 }

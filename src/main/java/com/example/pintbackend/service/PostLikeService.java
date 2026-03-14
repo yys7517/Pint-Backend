@@ -1,9 +1,7 @@
 /**
- * File: null.java
- * Path: com.example.pintbackend.service
+ * File: null.java Path: com.example.pintbackend.service
  * <p>
- * Outline:
- * counting how many likes a post has
+ * Outline: counting how many likes a post has
  * <p>
  * Author: jskt
  */
@@ -13,19 +11,18 @@ package com.example.pintbackend.service;
 
 import com.example.pintbackend.domain.PostLike;
 import com.example.pintbackend.domain.post.Post;
+import com.example.pintbackend.domain.post.exception.PostNotFoundException;
 import com.example.pintbackend.domain.user.entity.User;
+import com.example.pintbackend.domain.user.exception.UserNotFoundException;
 import com.example.pintbackend.dto.postDto.LikeResponse;
+import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.repository.PostLikeRepository;
 import com.example.pintbackend.repository.PostRepository;
+import com.example.pintbackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,67 +30,48 @@ public class PostLikeService {
 
     private final PostLikeRepository postLikeRepository;
     private final PostRepository postRepository;
-
-    /**
-     * 라이크 토글: 포스트 라이크 하면 불러오고, 라이크 안하면 안불러옴.
-     * Transactional 이유: writes to DB (insert or delete)
-     * takes the post ID and the User entity passed from controller via @AuthenticationPrincipal
-     */
+    private final UserRepository userRepository;
 
     @Transactional
-    public LikeResponse toggleLike(Long postId, User user) {
+    public LikeResponse toggleLike(Long postId, CustomUserDetails userDetails) {
+        Long userId = userDetails.getUserId();
 
-        Post post = postRepository.findById(postId).orElseThrow(() -> new RuntimeException("ERROR: 포스트가 없습니다"));
-
-        Optional<PostLike> existing = postLikeRepository.findByPostAndUser(post, user);
-
-        // check if postlike row already exists
+        Optional<PostLike> existing = postLikeRepository.findByPostIdAndUserId(postId, userId);
         boolean isLiked;
 
+        Post post = postRepository.findById(postId).orElseThrow(
+                () -> new PostNotFoundException(postId)
+        );
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new UserNotFoundException(userDetails.getEmail())
+        );
+
         if (existing.isPresent()) {
-            postLikeRepository.delete(existing.get());
+            // on -> off (toggle)
+            PostLike existingLike = existing.get();
+
+            post.removeLike(existingLike);
+            user.removeLike(existingLike);
+            postLikeRepository.delete(existingLike);
+
             isLiked = false;
         } else {
-            PostLike postLike = PostLike.builder()
-                    .post(post)
-                    .user(user)
-                    .build();
-            postLikeRepository.save(postLike);
+            // off -> on (toggle)
+            PostLike newLike = PostLike.create(post, user);
+            postLikeRepository.save(newLike);
+
             isLiked = true;
         }
-        long likeCount = postLikeRepository.countByPost(post);
+
+        int likeCount = postLikeRepository.countByPostId(postId);
 
         return new LikeResponse(isLiked, likeCount);
     }
 
-    /**
-     * 단일 포스트: likeCount + isLiked
-     */
-    public LikeResponse getLikeInfo(Post post, User user) {
-        long likeCount = postLikeRepository.countByPost(post);
-        boolean isLiked = (user != null) && postLikeRepository.existsByPostAndUser(post, user);
-        return new LikeResponse(isLiked, likeCount);
-    }
-
-    /**
-     * 다수 포스트: batch query 써서 N + 1 방지
-     */
-    public Map<Long, Long> getLikeCountByPostIds(List<Long> postIds) {
-        return postLikeRepository.countByPostIds(postIds)
-                .stream()
-                .collect(Collectors.toMap(r -> (Long) r[0], r -> (Long) r[1]));
-    }
-
-    /**
-     * 하나의 batch 쿼리 returns set of post ids the user liked.
-     * 유저 라이크 페이지 
-     */
-    public Set<Long> getLikedPostIds(List<Long> postIds, User user) {
-        if (user ==null) {
-            return Set.of();
-        }
-        return postLikeRepository.findLikedPostIdsByUser(postIds, user);
-    }
-
+    // TODO. 마이 좋아요 화면: 유저가 좋아요한 게시글 반환. (좋아요 목록 게시글 어떤 특성 필요한지 모름)
+//    public List<Post> getMyLikedPosts(CustomUserDetails userDetails) {
+//
+//        return postLikeRepository.findAllLikedPostIdsByUserId(userDetails.getUserId());
+//    }
 
 }

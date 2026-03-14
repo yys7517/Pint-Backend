@@ -47,8 +47,10 @@ public class PostController {
 
     @GetMapping
     @Operation(summary = "모든 게시글 조회")
-    public ResponseEntity<BaseResponse<GetAllPostResponse>> getAllPost() {
-        List<PostImageResponse> posts = postService.getAllPost();
+    public ResponseEntity<BaseResponse<GetAllPostResponse>> getAllPost(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        List<PostImageResponse> posts = postService.getAllPost(userDetails);
         GetAllPostResponse response = new GetAllPostResponse(posts);
 
         return ResponseEntity.ok(BaseResponse.success(response));

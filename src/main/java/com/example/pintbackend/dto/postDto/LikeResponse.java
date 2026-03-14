@@ -12,5 +12,5 @@ package com.example.pintbackend.dto.postDto;
 
 
 public record LikeResponse(boolean isLiked,
-                           long likeCount) {
+                           int likeCount) {
 }

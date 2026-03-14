@@ -13,6 +13,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.stream.Collectors;
 
@@ -77,6 +78,12 @@ public class GlobalExceptionHandler {
   public ResponseEntity<BaseResponse<Void>> handleDataIntegrity(DataIntegrityViolationException e) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
         .body(BaseResponse.fail(HttpStatus.CONFLICT.value(), "중복된 값이 존재합니다."));
+  }
+
+  @ExceptionHandler(MaxUploadSizeExceededException.class)
+  public ResponseEntity<BaseResponse<Void>> handleMaxUploadSize(MaxUploadSizeExceededException e) {
+    return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+        .body(BaseResponse.fail(HttpStatus.PAYLOAD_TOO_LARGE.value(), "업로드 가능한 파일 크기를 초과했습니다."));
   }
 
   // 로그인 인증 실패
