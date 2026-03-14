@@ -1,6 +1,7 @@
 package com.example.pintbackend.domain.user.entity;
 
 
+import com.example.pintbackend.domain.PostLike;
 import com.example.pintbackend.domain.post.Post;
 import com.example.pintbackend.domain.common.BaseEntity;
 import jakarta.persistence.Column;
@@ -47,6 +48,9 @@ public class User extends BaseEntity {
   @OneToMany(mappedBy = "user")
   private final List<Post> posts = new ArrayList<>();
 
+  @OneToMany(mappedBy = "user")
+  private final List<PostLike> likes = new ArrayList<>();
+
   @Builder
   private User(String email, String password, String username, String city, String introduction,
       String profileImageS3Key) {
@@ -69,5 +73,19 @@ public class User extends BaseEntity {
 
     posts.add(post);
     post.assignUser(this);
+  }
+
+  public void addLike(PostLike postLike) {
+    if (likes.contains(postLike)) {
+      return;
+    }
+
+    likes.add(postLike);
+    postLike.assignUser(this);
+  }
+
+  public void removeLike(PostLike postLike) {
+    likes.remove(postLike);
+    postLike.assignUser(null);
   }
 }
