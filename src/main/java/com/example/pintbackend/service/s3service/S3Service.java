@@ -11,17 +11,21 @@
 package com.example.pintbackend.service.s3service;
 
 
-import com.amazonaws.HttpMethod;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
@@ -31,7 +35,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3Service {
 
-    private final AmazonS3 amazonS3;
+    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -47,17 +52,19 @@ public class S3Service {
         // S3 객체 키(경로 + 파일명)를 생성한다.
         String s3Key = buildObjectKey(file);
 
-        // S3에 저장할 메타데이터를 파일 기준으로 맞춘다.
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(s3Key)
+                .contentType(file.getContentType())
+                .contentLength(file.getSize())
+                .build();
 
-        // MultipartFile의 실제 바이트를 S3에 업로드한다.
-        // amazonS3.putObject가 실패한다면?
         try {
-            amazonS3.putObject(bucket, s3Key, file.getInputStream(), metadata);  // 버킷 서버에 업로드
+            // .frominputstream wraps multipart bytess for sdk v2
+            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(),
+                    file.getSize()));
         } catch (IOException e) {
-            throw new RuntimeException("ERROR: S3에 업로드를 실패했습니다", e);
+            throw new RuntimeException("ERROR: S3 업로드를 실패했습니다", e);
         }
 
         return s3Key;  // DB에 저장을 위해 s3 key값 반환
@@ -68,19 +75,24 @@ public class S3Service {
      * 이 URL은 expiration 시점까지만 유효
      */
     public String getPresignedUrlToRead(String path) {
-        // URL 만료 시간을 "현재 시각 + 5분"으로 설정한다.
-        Date expiration = new Date(System.currentTimeMillis() + 1000 * 60 * 60);
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(path)
+                .build();
 
-        // 조회 목적 URL이므로 반드시 GET 메서드로 서명해야 한다.
-        GeneratePresignedUrlRequest generatePresignedUrlRequest =
-                new GeneratePresignedUrlRequest(bucket, path)
-                        .withMethod(HttpMethod.GET)
-                        .withExpiration(expiration);
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofHours(1))
+                .getObjectRequest(getObjectRequest)
+                .build();
 
-        // AWS 서명 정보가 포함된 임시 접근 URL 생성
-        URL url = amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
+    }
 
-        return url.toString();
+    public void deletePost(String key) {
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build());
     }
 
     /**
@@ -134,11 +146,5 @@ public class S3Service {
         };
     }
 
-    /**
-     * 게시글 지우기
-     */
 
-    public void deletePost(String key) {
-        amazonS3.deleteObject(bucket, key);
-    }
 }

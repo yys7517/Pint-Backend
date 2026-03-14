@@ -100,6 +100,7 @@ public class PostController {
     }
 
     @GetMapping("/me")
+    @Operation(summary = "내 프로필 페이지 상세")
     public BaseResponse<MyProfileResponse> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return BaseResponse.success(userService.getProfile(userDetails));
     }
