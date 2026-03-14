@@ -3,9 +3,12 @@ package com.example.pintbackend.service;
 import com.example.pintbackend.domain.user.entity.User;
 import com.example.pintbackend.domain.user.exception.DuplicateEmailException;
 import com.example.pintbackend.domain.user.exception.UserNotFoundException;
+import com.example.pintbackend.dto.postDto.profile.MyProfileResponse;
+import com.example.pintbackend.dto.postDto.profile.ProfileImageResponse;
 import com.example.pintbackend.dto.user.CustomUserDetails;
 import com.example.pintbackend.dto.user.request.LoginUserRequest;
 import com.example.pintbackend.dto.user.response.LoginUserResponse;
+import com.example.pintbackend.repository.PostLikeRepository;
 import com.example.pintbackend.repository.UserRepository;
 import com.example.pintbackend.service.s3service.S3Service;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,10 +34,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class UserService {
 
-  private final UserRepository userRepository;
-  private final PasswordEncoder passwordEncoder;
-  private final AuthenticationManager authenticationManager;
-  private final S3Service s3Service;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final PostLikeRepository postLikeRepository;
+    private final AuthenticationManager authenticationManager;
+    private final S3Service s3Service;
 
   @Value("${server.servlet.session.cookie.secure:true}")
   private boolean secureCookie;
@@ -128,14 +132,53 @@ public class UserService {
     return List.of(deleteSessionCookie, deleteCsrfCookie);
   }
 
-  public String getProfileImg(CustomUserDetails userDetails) {
+    public String getProfileImg(CustomUserDetails userDetails) {
 
-    String profileImageKey = userDetails.getProfileImageS3Key();
-    log.info("profileImageKey = {}", profileImageKey);
-    String profileImgUrl = "";
-    if(profileImageKey != null) {
-      profileImgUrl = s3Service.getPresignedUrlToRead(profileImageKey);
+        String profileImageKey = userDetails.getProfileImageS3Key();
+        log.info("profileImageKey = {}", profileImageKey);
+        String profileImgUrl = "";
+        if (profileImageKey != null) {
+            profileImgUrl = s3Service.getPresignedUrlToRead(profileImageKey);
+        }
+        return profileImgUrl;
     }
-    return profileImgUrl;
-  }
+
+    /**
+     * Transactional(readOnly=true) keeps hibernate session open
+     */
+    @Transactional(readOnly = true)
+    public MyProfileResponse getProfile(Long targetUserid, CustomUserDetails userDetails) {
+
+        // 유저 엔티티 불러오기
+        User user = userRepository.findById(targetUserid)
+                .orElseThrow(() -> new UserNotFoundException(userDetails.getEmail()));
+
+        // 세션 유저가 자기 프로필 보고있으면 true
+        boolean isMe = targetUserid.equals(userDetails.getUserId());
+
+        log.info("isMe: {}", isMe);
+        log.info("targetUserId: {}, sessionUserId: {}", targetUserid, userDetails.getUserId());
+
+        // 내 포스트 불러오기
+        List<ProfileImageResponse> postList = user.getPosts().stream()
+                .map(post -> ProfileImageResponse.from(
+                        post,
+                        s3Service.getPresignedUrlToRead(post.getImageFileS3Key())
+                ))
+                .toList();
+
+        // 내가 좋아한 포스트 불러오기
+        List<ProfileImageResponse> likePostList = postLikeRepository
+                .findAllLikedPostByUserId(userDetails.getUserId())
+                .stream()
+                .map(post -> ProfileImageResponse.from(
+                        post,
+                        s3Service.getPresignedUrlToRead(post.getImageFileS3Key())
+                ))
+                .toList();
+
+        return MyProfileResponse.from(user, isMe, postList, likePostList);
+    }
+
+
 }

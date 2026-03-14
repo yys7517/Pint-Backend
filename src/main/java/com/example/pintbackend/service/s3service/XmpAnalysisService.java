@@ -1,12 +1,13 @@
 package com.example.pintbackend.service.s3service;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.example.pintbackend.dto.XmpAnalysisResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.*;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -23,10 +24,10 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class XmpAnalysisService {
 
-  private final AmazonS3 amazonS3;
+    private final S3Client s3Client;
 
-  @Value("${cloud.aws.s3.bucket}")
-  private String bucket;
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
 
     private static final String CRS_NS = "http://ns.adobe.com/camera-raw-settings/1.0/";
     private static final String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
@@ -80,31 +81,40 @@ public class XmpAnalysisService {
         );
     }
 
-  /**
-   * XMP 파일에서 실제로 변경된 보정값만 추출해 API 응답 형태로 변환한다.
-   */
-  public XmpAnalysisResponse analyze(String s3Key) throws IOException {
-    if (s3Key == null || s3Key.isEmpty()) {
-      throw new IllegalArgumentException("s3Key가 존재하지 않습니다.");
+    /**
+     * XMP 파일에서 실제로 변경된 보정값만 추출해 API 응답 형태로 변환한다.
+     */
+
+    public XmpAnalysisResponse analyze(String s3Key) throws IOException {
+        if (s3Key == null || s3Key.isEmpty()) {
+            throw new IllegalArgumentException("s3Key가 존재하지 않습니다.");
+        }
+
+//    InputStream xmpFileInputStream = amazonS3.getObject(bucket, s3Key).getObjectContent();
+
+        InputStream xmpFileInputStream = s3Client.getObject(
+                GetObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(s3Key)
+                        .build()
+        );
+
+        if (xmpFileInputStream == null) {
+            throw new IllegalArgumentException("xmp 파일이 존재하지 않습니다.");
+        }
+
+        Element description = extractDescription(xmpFileInputStream); // xmp 파일을 key-value 형태로 파싱
+        Map<String, String> rawCrsSettings = filterChangedOnly(extractCrsAttributes(description));  // 기본 값 제외
+
+        // basic, color, detail (기본 값 제외한)
+        return new XmpAnalysisResponse(
+                pick(rawCrsSettings, BASIC_KEYS),
+                pick(rawCrsSettings, COLOR_KEYS),
+                pick(rawCrsSettings, DETAIL_KEYS)
+        );
     }
 
-    InputStream xmpFileInputStream = amazonS3.getObject(bucket, s3Key).getObjectContent();
-    if (xmpFileInputStream == null) {
-      throw new IllegalArgumentException("xmp 파일이 존재하지 않습니다.");
-    }
-
-    Element description = extractDescription(xmpFileInputStream); // xmp 파일을 key-value 형태로 파싱
-    Map<String, String> rawCrsSettings = filterChangedOnly(extractCrsAttributes(description));  // 기본 값 제외
-
-    // basic, color, detail (기본 값 제외한)
-    return new XmpAnalysisResponse(
-        pick(rawCrsSettings, BASIC_KEYS),
-        pick(rawCrsSettings, COLOR_KEYS),
-        pick(rawCrsSettings, DETAIL_KEYS)
-    );
-  }
-
-  /**
+    /**
      * XMP XML을 안전하게 파싱하고, 핵심 설정이 담긴 rdf:Description 노드를 찾는다.
      * xmp 파일을 key-value 형태로 파싱
      */
