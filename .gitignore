@@ -44,3 +44,6 @@ out/
 .vscode/
 
 /upload
+
+# Agent working notes (topic-based research/plan docs)
+agent/
