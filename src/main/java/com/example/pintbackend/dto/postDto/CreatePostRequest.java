@@ -26,6 +26,7 @@ public class CreatePostRequest {
 
     private String description;
     private String location;
+    private String camera;
 
     @Schema(type = "string", format = "binary")
     private MultipartFile image;
