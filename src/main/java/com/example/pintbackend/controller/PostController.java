@@ -27,7 +27,9 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.io.IOException;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -454,6 +456,7 @@ public class PostController {
                     )
             )
     })
+
     public ResponseEntity<BaseResponse<?>> updatePost(
             @PathVariable Long postId,
             @ModelAttribute UpdatePostRequest request,
