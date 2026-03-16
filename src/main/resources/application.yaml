@@ -33,7 +33,7 @@ spring:
       max-request-size: 20MB
 
 server:
-  forward-headers-strategy: native  # Nginx가 넘겨주는 X-Forwarded-* 헤더를 Spring Boot가 신뢰하도록 설정
+  forward-headers-strategy: framework  # Vercel/Nginx가 넘겨주는 X-Forwarded-* 헤더를 Spring Boot가 신뢰하도록 설정
 
   servlet:
     session:

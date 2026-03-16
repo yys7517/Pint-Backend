@@ -110,6 +110,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/csrf-token").permitAll()
 
                         // 회원가입, 로그인, Swagger 제외 요청은 인증/인가 필요
                         .anyRequest().authenticated()

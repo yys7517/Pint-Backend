@@ -93,11 +93,6 @@ public class UserService {
                 HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context
         );
 
-        // 서블릿 컨테이너가 자동으로 쿠키에 "JSESSIONID", "XSRF-TOKEN"를 설정.
-        // TODO. CSRF 나중에 구현
-        // CsrfToken csrfToken = (CsrfToken) httpRequest.getAttribute(CsrfToken.class.getName());
-        // String csrfTokenValue = csrfToken == null ? "" : csrfToken.getToken();
-
         Object principal = authentication.getPrincipal();
         Long userId = null;
         if (principal instanceof CustomUserDetails customUserDetails) {
