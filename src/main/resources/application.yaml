@@ -33,14 +33,14 @@ spring:
       max-request-size: 20MB
 
 server:
-  forward-headers-strategy: framework
+  forward-headers-strategy: native  # Nginx가 넘겨주는 X-Forwarded-* 헤더를 Spring Boot가 신뢰하도록 설정
+
   servlet:
     session:
       timeout: 1h # 1시간 (m: 분, s: 초, h: 시간)
       cookie:
-        same-site: ${SESSION_COOKIE_SAME_SITE:Lax}
-        secure: ${SESSION_COOKIE_SECURE:false}
-        http-only: true
+        same-site: none
+        secure: true
 
 cloud:
   aws:
