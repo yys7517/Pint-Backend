@@ -2,6 +2,7 @@ package com.example.pintbackend.global.exception;
 
 import com.example.pintbackend.domain.post.exception.PostNotFoundException;
 import com.example.pintbackend.domain.user.exception.DuplicateEmailException;
+import com.example.pintbackend.domain.user.exception.InvalidLoginCredentialsException;
 import com.example.pintbackend.domain.user.exception.UserNotFoundException;
 import com.example.pintbackend.dto.common.response.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -75,6 +76,13 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(InvalidSearchKeywordException.class)
   public ResponseEntity<BaseResponse<Void>> handleInvalidSearchKeyword(InvalidSearchKeywordException e) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(BaseResponse.fail(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+  }
+
+  // 로그인 자격증명 실패
+  @ExceptionHandler(InvalidLoginCredentialsException.class)
+  public ResponseEntity<BaseResponse<Void>> handleInvalidLoginCredentials(InvalidLoginCredentialsException e) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
         .body(BaseResponse.fail(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
   }

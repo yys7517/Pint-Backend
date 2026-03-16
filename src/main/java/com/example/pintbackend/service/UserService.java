@@ -2,6 +2,7 @@ package com.example.pintbackend.service;
 
 import com.example.pintbackend.domain.user.entity.User;
 import com.example.pintbackend.domain.user.exception.DuplicateEmailException;
+import com.example.pintbackend.domain.user.exception.InvalidLoginCredentialsException;
 import com.example.pintbackend.domain.user.exception.UserNotFoundException;
 import com.example.pintbackend.dto.search.SearchUser;
 import com.example.pintbackend.dto.postDto.profile.request.EditProfileRequest;
@@ -28,6 +29,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -69,9 +71,14 @@ public class UserService {
     @Transactional
     public LoginUserResponse login(LoginUserRequest request, HttpServletRequest httpRequest) {
         // 1. 유저 인증 시도
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.email(), request.password())
-        );
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.email(), request.password())
+            );
+        } catch (AuthenticationException e) {
+            throw new InvalidLoginCredentialsException();
+        }
 
         // 인증 성공 시, Security에 컨텍스트에 유저 인증 정보 설정
         SecurityContext context = SecurityContextHolder.createEmptyContext();

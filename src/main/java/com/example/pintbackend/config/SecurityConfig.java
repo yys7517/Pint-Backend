@@ -29,6 +29,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -85,11 +86,11 @@ public class SecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             .maximumSessions(1) // 하나의 계정당 1개의 세션만 허용 (중복 로그인 방지)
             .maxSessionsPreventsLogin(false) // 새로운 기기에서 로그인하면 기존 기기는 로그아웃됨
+            .expiredSessionStrategy(expiredSessionStrategy()) // 만료된 세션 응답 처리
         )
         .authorizeHttpRequests(auth -> auth
             // 회원가입/로그인 및 swagger는 허용
-            .requestMatchers("/auth/login", "/auth/signup", "/auth/signout", "/auth/unique")
-            .permitAll()
+            .requestMatchers("/auth/**").permitAll()
             .requestMatchers("/actuator/health").permitAll()
             .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
             .anyRequest().authenticated()
@@ -140,6 +141,14 @@ public class SecurityConfig {
     response.setCharacterEncoding("UTF-8");
     response.getWriter().write(
         objectMapper.writeValueAsString(BaseResponse.fail(status.value(), message))
+    );
+  }
+
+  private SessionInformationExpiredStrategy expiredSessionStrategy() {
+    return event -> writeErrorResponse(
+        event.getResponse(),
+        HttpStatus.UNAUTHORIZED,
+        "다른 기기에서 로그인되어 현재 세션이 만료되었습니다."
     );
   }
 
