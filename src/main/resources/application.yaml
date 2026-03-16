@@ -36,6 +36,7 @@ server:
   forward-headers-strategy: framework
   servlet:
     session:
+      timeout: 1h # 1시간 (m: 분, s: 초, h: 시간)
       cookie:
         same-site: ${SESSION_COOKIE_SAME_SITE:Lax}
         secure: ${SESSION_COOKIE_SECURE:false}

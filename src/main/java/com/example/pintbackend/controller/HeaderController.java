@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -141,6 +142,8 @@ public class HeaderController {
     String profileImgUrl = userService.getProfileImg(userDetails);
     HeaderProfileImgResponse response = new HeaderProfileImgResponse(profileImgUrl);
 
-    return ResponseEntity.ok(BaseResponse.success(response));
+      return ResponseEntity.ok()
+              .cacheControl(CacheControl.noCache().mustRevalidate())
+              .body(BaseResponse.success(response));
   }
 }

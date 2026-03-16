@@ -13,6 +13,7 @@ import com.example.pintbackend.domain.post.Post;
 import com.example.pintbackend.domain.post.exception.PostNotFoundException;
 import com.example.pintbackend.domain.user.entity.User;
 import com.example.pintbackend.domain.user.exception.UserNotFoundException;
+import com.example.pintbackend.dto.LoginPagePostResponse;
 import com.example.pintbackend.dto.XmpAnalysisResponse;
 import com.example.pintbackend.dto.postDto.CreatePostRequest;
 import com.example.pintbackend.dto.postDto.GetAllPostResponse;
@@ -147,6 +148,23 @@ public class PostService {
                 posts.isFirst(),
                 posts.isLast()
         );
+    }
+
+    public List<LoginPagePostResponse> getLoginPagePosts() {
+        List<Post> posts = postRepository.findTop10ByOrderByCreatedAtDesc();
+
+        return posts.stream()
+                .map(post -> {
+                    String previewImageKey = StringUtils.hasText(post.getCompressedImageFileS3Key())
+                            ? post.getCompressedImageFileS3Key()
+                            : post.getImageFileS3Key();
+
+                    return LoginPagePostResponse.from(
+                            post,
+                            resolvePresignedUrl(previewImageKey)
+                    );
+                })
+                .toList();
     }
 
     public PostResponse getPostById(Long postId, CustomUserDetails userDetails) throws IOException {
