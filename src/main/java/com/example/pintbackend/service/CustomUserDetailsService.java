@@ -22,12 +22,5 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         return new CustomUserDetails(user);
 
-
-        // 도메인 DB 에서 유저 정보를 불러오는중
-//    return org.springframework.security.core.userdetails.User.builder()
-//        .username(user.getEmail())
-//        .password(user.getPassword())
-//        .build();
-
     }
 }

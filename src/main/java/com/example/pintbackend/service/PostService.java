@@ -91,8 +91,6 @@ public class PostService {
 
         String filterKey = null;
 
-        log.info("filterKey : {}", filterKey);
-
         if (request.getFilter() != null && !request.getFilter().isEmpty()) {
             filterKey = s3Service.uploadFile(request.getFilter());
         }
@@ -120,19 +118,21 @@ public class PostService {
      */
     public GetAllPostResponse getAllPost(CustomUserDetails userDetails, Pageable pageable) {
 
+        // Query 1: SELECT * FROM posts LIMIT 10
         Page<Post> posts = postRepository.findAll(pageable);
 
         List<PostImageResponse> content = posts.getContent().stream()
                 .map(post ->
                         PostImageResponse.from(
                                 post,
+                                // Query 2~10: SELECT 1 FROM post_like WHERE post_id=1 AND user_id=5
                                 postLikeRepository.existsByPostIdAndUserId(post.getId(), userDetails.getUserId()),  // 게시글 좋아요 여부
                                 resolvePresignedUrl(post.getCompressedImageFileS3Key() != null ? post.getCompressedImageFileS3Key() : post.getImageFileS3Key()),
                                 new PostUserInfo(   // 게시글 작성자 정보
-                                        post.getUser().getId(),
-                                        post.getUser().getUsername(),
+                                        post.getUser().getId(),     // LAZY 로딩 트리거
+                                        post.getUser().getUsername(),   // more queries
                                         resolvePresignedUrl(post.getUser().getProfileImageS3Key()),
-                                        post.getUser().getId().equals(userDetails.getUserId())
+                                        post.getUser().getId().equals(userDetails.getUserId())      // more queries
                                 )
                         ))
                 .toList();
