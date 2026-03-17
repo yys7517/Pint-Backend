@@ -32,7 +32,9 @@ import com.example.pintbackend.service.imageservice.ImageMetadataService;
 import com.example.pintbackend.service.s3service.S3Service;
 import com.example.pintbackend.service.s3service.XmpAnalysisService;
 import org.springframework.util.StringUtils;
+
 import java.util.Objects;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -82,11 +84,10 @@ public class PostService {
 
         // upload original
         String imageKey = s3Service.uploadFile(image);
-        
+
         // 압축, 그리고 s3버킷에 올리기
         byte[] compressedBytes = imageCompressionService.compress(image);
-        log.info("[ImageCompression] original bytes: {}", image.getSize());
-        log.info("[ImageCompression] original: {} KB, compressed: {} KB", image.getSize() / 1024, compressedBytes.length / 1024);
+        log.info("[ImageCompression] original: {} MB, compressed: {} MB", image.getSize() / 1024, compressedBytes.length / 1024);
         String compressedImageKey = s3Service.uploadCompressedImage(compressedBytes);
 
         String filterKey = null;
