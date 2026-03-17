@@ -42,7 +42,7 @@ public class HeaderController {
     HeaderProfileImgResponse response = new HeaderProfileImgResponse(profileImgUrl);
 
       return ResponseEntity.ok()
-              .cacheControl(CacheControl.noCache().mustRevalidate())
+//              .cacheControl(CacheControl.noCache().mustRevalidate())
               .body(BaseResponse.success(response));
   }
 }

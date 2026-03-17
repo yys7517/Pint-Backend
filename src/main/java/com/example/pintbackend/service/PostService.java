@@ -217,8 +217,6 @@ public class PostService {
 
     /**
      * editPostById
-     * TODO: create editPostById function with description, location, filter(JSON), and camera request
-     * TODO: repsonse -> description, location, filter(JSON), camera.
      */
 
     @Transactional
