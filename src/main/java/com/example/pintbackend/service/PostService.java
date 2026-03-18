@@ -87,7 +87,7 @@ public class PostService {
 
         // 압축, 그리고 s3버킷에 올리기
         byte[] compressedBytes = imageCompressionService.compress(image);
-        log.info("[ImageCompression] original: {} KB, compressed: {} KB", image.getSize() / 1024, compressedBytes.length / 1024);
+        log.info("[ImageCompression] original: {} KB, compressed: {} KB", image.getSize() / 1024.0, compressedBytes.length / 1024.0);
         String compressedImageKey = s3Service.uploadCompressedImage(compressedBytes);
 
         String filterKey = null;
