@@ -32,13 +32,11 @@ import com.example.pintbackend.service.imageservice.ImageMetadataService;
 import com.example.pintbackend.service.s3service.S3Service;
 import com.example.pintbackend.service.s3service.XmpAnalysisService;
 import org.springframework.util.StringUtils;
-
 import java.util.Objects;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -119,8 +117,8 @@ public class PostService {
      */
     public GetAllPostResponse getAllPost(CustomUserDetails userDetails, Pageable pageable) {
 
-        // Query 1: SELECT * FROM posts LIMIT 10
-        Page<Post> posts = postRepository.findAllWithUser(pageable);
+        // Query 1: SELECT p.*, u.* FROM posts p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC LIMIT size + 1
+        Slice<Post> posts = postRepository.findAllWithUser(pageable);
 
         List<PostImageResponse> content = posts.getContent().stream()
                 .map(post ->
@@ -142,8 +140,6 @@ public class PostService {
                 content,
                 posts.getNumber(),
                 posts.getSize(),
-                posts.getTotalElements(),
-                posts.getTotalPages(),
                 posts.hasNext(),
                 posts.hasPrevious(),
                 posts.isFirst(),
@@ -214,10 +210,6 @@ public class PostService {
         }
         return s3Service.getPresignedUrlToRead(s3Key);
     }
-
-    /**
-     * editPostById
-     */
 
     @Transactional
     public void updatePost(Long postId, CustomUserDetails userDetails, UpdatePostRequest request)

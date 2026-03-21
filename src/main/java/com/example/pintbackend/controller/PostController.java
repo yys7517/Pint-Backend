@@ -33,7 +33,6 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -90,8 +89,7 @@ public class PostController {
 
         Pageable pageable = PageRequest.of(
                 page,
-                size,
-                Sort.by(Sort.Direction.DESC, "createdAt")
+                size
         );
         GetAllPostResponse response = postService.getAllPost(userDetails, pageable);
 

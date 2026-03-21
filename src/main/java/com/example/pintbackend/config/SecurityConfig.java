@@ -74,7 +74,6 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/actuator/health"
-                                // "/posts", "/posts/**"
                         )
                 )
 //        .csrf(AbstractHttpConfigurer::disable)
