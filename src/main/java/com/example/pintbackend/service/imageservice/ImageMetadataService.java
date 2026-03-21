@@ -78,15 +78,12 @@ public class ImageMetadataService {
         if (make == null && model == null) {
             return null;
         }
-
         if (make == null) {
             return model.trim();
         }
-
         if (model == null) {
             return make.trim();
         }
-
         if (model.toLowerCase().startsWith(make.toLowerCase().trim())) {
             return model.trim();
         }

@@ -108,7 +108,7 @@ public class S3Service {
             log.warn("Redis 캐시 조회 실패. Redis 키: {}, 예외: {}", redisKey, e.getMessage());
         }
 
-        // 2) 캐시 미스: 실제 URL 생성
+        // 2) 캐싱된 URL이 없을 때, 새로 요청.
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucket)
                 .key(normalizedPath)

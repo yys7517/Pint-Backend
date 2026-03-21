@@ -47,7 +47,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class PostController {
 
     private final PostService postService;
-    private final UserService userService;
 
     private static final String JSON = MediaType.APPLICATION_JSON_VALUE;
 

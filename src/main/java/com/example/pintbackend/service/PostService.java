@@ -82,11 +82,10 @@ public class PostService {
 
         // upload original
         String imageKey = s3Service.uploadFile(image);
-        
+
         // 압축, 그리고 s3버킷에 올리기
         byte[] compressedBytes = imageCompressionService.compress(image);
-        log.info("[ImageCompression] original bytes: {}", image.getSize());
-        log.info("[ImageCompression] original: {} KB, compressed: {} KB", image.getSize() / 1024, compressedBytes.length / 1024);
+        log.info("[ImageCompression] original: {} KB, compressed: {} KB", image.getSize() / 1024.0, compressedBytes.length / 1024.0);
         String compressedImageKey = s3Service.uploadCompressedImage(compressedBytes);
 
         String filterKey = null;
@@ -211,12 +210,6 @@ public class PostService {
         }
         return s3Service.getPresignedUrlToRead(s3Key);
     }
-
-    /**
-     * editPostById
-     * TODO: create editPostById function with description, location, filter(JSON), and camera request
-     * TODO: repsonse -> description, location, filter(JSON), camera.
-     */
 
     @Transactional
     public void updatePost(Long postId, CustomUserDetails userDetails, UpdatePostRequest request)

@@ -34,108 +34,7 @@ public class HeaderController {
           + "axios 사용 시 withCredentials: true 설정이 필요합니다. "
           + "Swagger UI에서는 먼저 /auth/login 호출 후 같은 브라우저 세션에서 실행해야 합니다."
   )
-  @ApiResponses({
-      @ApiResponse(
-          responseCode = "200",
-          description = "프로필 이미지 조회 성공",
-          content = @Content(
-              mediaType = "application/json",
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "code": 200,
-                        "message": "Success",
-                        "data": {
-                          "profileImgUrl": "https://example.com/profile.png"
-                        }
-                      }
-                      """
-              )
-          )
-      ),
-      @ApiResponse(
-          responseCode = "200",
-          description = "프로필 이미지 없을 때",
-          content = @Content(
-              mediaType = "application/json",
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "code": 200,
-                        "message": "Success",
-                        "data": {
-                          "profileImgUrl": ""
-                        }
-                      }
-                      """
-              )
-          )
-      ),
-      @ApiResponse(
-          responseCode = "401",
-          description = "로그인되지 않은 요청",
-          content = @Content(
-              mediaType = "application/json",
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "code": 401,
-                        "message": "로그인이 필요합니다.",
-                        "data": null
-                      }
-                      """
-              )
-          )
-      ),
-      @ApiResponse(
-          responseCode = "403",
-          description = "세션 쿠키 누락 또는 인증 실패",
-          content = @Content(
-              mediaType = "application/json",
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "code": 403,
-                        "message": "접근 권한이 없습니다.",
-                        "data": null
-                      }
-                      """
-              )
-          )
-      ),
-      @ApiResponse(
-          responseCode = "404",
-          description = "사용자 조회 실패",
-          content = @Content(
-              mediaType = "application/json",
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "code": 404,
-                        "message": "사용자를 찾을 수 없습니다: user@example.com",
-                        "data": null
-                      }
-                      """
-              )
-          )
-      ),
-      @ApiResponse(
-          responseCode = "500",
-          description = "서버 내부 오류",
-          content = @Content(
-              mediaType = "application/json",
-              examples = @ExampleObject(
-                  value = """
-                      {
-                        "code": 500,
-                        "message": "서버 내부 오류가 발생했습니다.",
-                        "data": null
-                      }
-                      """
-              )
-          )
-      )
-  })
+
   public ResponseEntity<BaseResponse<HeaderProfileImgResponse>> getMyProfileImg(
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
@@ -143,7 +42,7 @@ public class HeaderController {
     HeaderProfileImgResponse response = new HeaderProfileImgResponse(profileImgUrl);
 
       return ResponseEntity.ok()
-              .cacheControl(CacheControl.noCache().mustRevalidate())
+//              .cacheControl(CacheControl.noCache().mustRevalidate())
               .body(BaseResponse.success(response));
   }
 }
