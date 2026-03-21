@@ -13,7 +13,49 @@
 * **핵심 기능**: 사진 속 장소 및 필터 정보 공유, XMP 메타데이터 표준을 활용한 카메라 정보 자동 추출, 게시글 좋아요
 
 <br />
-
+## 패키지 구조
+📦src
+ ┣ 📂main
+ ┃ ┣ 📂java
+ ┃ ┃ ┗ 📂com
+ ┃ ┃ ┃ ┗ 📂example
+ ┃ ┃ ┃ ┃ ┗ 📂pintbackend
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂aop
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ApiLoggingAspect.java     # AOP 로거
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂config                      # S3, Spring Security Config
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂controller                  # Controller Layer
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂domain
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂common
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜BaseEntity.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂post
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂exception
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂user
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂exception
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂postlike
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂common
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜BaseResponse.java
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂header
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂response
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂post
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂request
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂response
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂profile
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂request
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂response
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂search
+ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂user
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂request
+ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂response
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂global
+ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂exception       # 전역 Exception Handler
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂repository        # Repository Layer
+ ┃ ┃ ┃ ┃ ┃ ┣ 📂service           # Service Layer 
+ ┃ ┃ ┃ ┃ ┃ ┗ 📜PintBackendApplication.java
+ ┃ ┗ 📂resources
+ ┃ ┃ ┗ 📜application.yaml
 ## 🛠 Tech Stack
 <img width="800" height="600" alt="image" src="https://github.com/user-attachments/assets/583b12b4-bd98-4f74-b6f7-c63af6ef1e54" />
 
@@ -28,7 +70,7 @@
 * **Proxy** : Nginx
 * **Server** : AWS EC2
 
-### Architecture
+## Architecture
 <img width="1324" height="730" alt="image" src="https://github.com/user-attachments/assets/9abc4efc-ddc4-41f8-9c75-f8ca2f65a9ee" />
 
 <br />
