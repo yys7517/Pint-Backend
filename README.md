@@ -1,4 +1,4 @@
-<img width="533" height="481" alt="image" src="https://github.com/user-attachments/assets/c1ea9e80-cf2b-4d65-9b5b-2cacd51d4cc3" /># 📸 PINT (핀트)
+# 📸 PINT (핀트)
 > **"내 취향에 핀트가 딱 맞는 출사지 공유소"**
 유저들이 사진의 본질에만 집중할 수 있도록 돕는 **Content-First** 사진 및 필터 정보 공유 플랫폼입니다.
 
