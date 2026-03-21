@@ -1,4 +1,4 @@
-# 📸 PINT (핀트)
+<img width="533" height="481" alt="image" src="https://github.com/user-attachments/assets/c1ea9e80-cf2b-4d65-9b5b-2cacd51d4cc3" /># 📸 PINT (핀트)
 > **"내 취향에 핀트가 딱 맞는 출사지 공유소"**
 유저들이 사진의 본질에만 집중할 수 있도록 돕는 **Content-First** 사진 및 필터 정보 공유 플랫폼입니다.
 
@@ -56,6 +56,36 @@
 <br />
 <br />
 **해결**: JPQL JOIN FETCH를 적용하여 단 한 번의 쿼리로 연관 객체까지 일괄 조회
+
+
+### 5. Vibe Coding 전략 (With. Codex)
+<img width="533" height="481" alt="image" src="https://github.com/user-attachments/assets/b554fc74-0d1b-4a56-9312-46f32c04e1be" />
+
+```
+# 에이전트 작업 규칙
+
+## 주제별 문서 관리
+
+- 모든 작업은 `agent/<주제명>/` 디렉터리 아래에서 관리한다.
+- 각 주제 디렉터리에는 아래 파일을 유지한다.
+  - `research_<주제명>.md`
+  - `plan_<주제명>.md`
+- 같은 주제 파일이 이미 있으면 새로 만들지 말고 기존 파일을 업데이트한다.
+
+## 예시
+
+- 주제: `security_config`
+- 파일:
+  - `agent/security_config/research_security_config.md`
+  - `agent/security_config/plan_security_config.md`
+
+```
+위와 같이 구조화된 에이전트 작업 규칙 (AGENT.md)을 작성하고, 프로젝트를 진행하였습니다.
+- 문서 기반 관리: 모든 작업은 agent/<주제명>/ 하위에 research 및 plan 문서로 명문화하여 관리하였습니다. research 문서는 기존 코드베이스를 분석하여 작성하게끔 하였고, 앞으로 할 작업내용에 대한 plan 문서를 작성하게 하였습니다.
+- 지속적 업데이트: 신규 생성보다 기존 문서를 갱신하여 맥락의 연속성을 유지합니다.
+- 정확도 향상 및 지연 감소
+   - 컨텍스트를 길게 가져가더라도, 문서화를 통해 주제별로 세션을 다양하게 다룰 수 있었습니다.
+   - 간결한 프롬프트만으로도 사전에 정의된 research와 plan 문서를 참조하도록 하여, 코드의 정확도를 높였고, 문서화를 통해 Agent으 문맥 파악을 더 쉽게하여, 답변 시간을 단축시킬 수 있었습니다.
 
 <br />
 
