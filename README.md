@@ -14,48 +14,8 @@
 
 <br />
 ## 패키지 구조
-📦src
- ┣ 📂main
- ┃ ┣ 📂java
- ┃ ┃ ┗ 📂com
- ┃ ┃ ┃ ┗ 📂example
- ┃ ┃ ┃ ┃ ┗ 📂pintbackend
- ┃ ┃ ┃ ┃ ┃ ┣ 📂aop
- ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜ApiLoggingAspect.java     # AOP 로거
- ┃ ┃ ┃ ┃ ┃ ┣ 📂config                      # S3, Spring Security Config
- ┃ ┃ ┃ ┃ ┃ ┣ 📂controller                  # Controller Layer
- ┃ ┃ ┃ ┃ ┃ ┣ 📂domain
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂common
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜BaseEntity.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂post
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂exception
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂user
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂entity
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂exception
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂postlike
- ┃ ┃ ┃ ┃ ┃ ┣ 📂dto
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂common
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📜BaseResponse.java
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂header
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂response
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂post
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂request
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂response
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂profile
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂request
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂response
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂search
- ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂user
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂request
- ┃ ┃ ┃ ┃ ┃ ┃ ┃ ┣ 📂response
- ┃ ┃ ┃ ┃ ┃ ┣ 📂global
- ┃ ┃ ┃ ┃ ┃ ┃ ┗ 📂exception       # 전역 Exception Handler
- ┃ ┃ ┃ ┃ ┃ ┣ 📂repository        # Repository Layer
- ┃ ┃ ┃ ┃ ┃ ┣ 📂service           # Service Layer 
- ┃ ┃ ┃ ┃ ┃ ┗ 📜PintBackendApplication.java
- ┃ ┗ 📂resources
- ┃ ┃ ┗ 📜application.yaml
+<img width="553" height="845" alt="image" src="https://github.com/user-attachments/assets/063983d9-d9be-468e-9875-1e4a6347e031" />
+
 ## 🛠 Tech Stack
 <img width="800" height="600" alt="image" src="https://github.com/user-attachments/assets/583b12b4-bd98-4f74-b6f7-c63af6ef1e54" />
 
