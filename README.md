@@ -13,7 +13,9 @@
 * **핵심 기능**: 사진 속 장소 및 필터 정보 공유, XMP 메타데이터 표준을 활용한 카메라 정보 자동 추출, 게시글 좋아요
 
 <br />
+
 ## 패키지 구조
+
 <img width="553" height="845" alt="image" src="https://github.com/user-attachments/assets/063983d9-d9be-468e-9875-1e4a6347e031" />
 
 ## 🛠 Tech Stack
