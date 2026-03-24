@@ -33,7 +33,7 @@
 * **Server** : AWS EC2
 
 ## Architecture
-<img width="1324" height="730" alt="image" src="https://github.com/user-attachments/assets/9abc4efc-ddc4-41f8-9c75-f8ca2f65a9ee" />
+<img width="1562" height="771" alt="image" src="https://github.com/user-attachments/assets/cf39a426-7765-4409-af04-509dfad664a1" />
 
 <br />
 
