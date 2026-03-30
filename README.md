@@ -39,11 +39,27 @@
 
 ## ✨ 담당 기능 및 개인 개발내용
 ### 1. 이미지 로딩 성능 최적화 (Redis Caching)
+<img width="984" height="456" alt="image" src="https://github.com/user-attachments/assets/21064e20-5ea4-43a1-831d-d6702b7c05ea" />
+
 * **문제 상황**: S3 Private 버킷 보안 정책상 매번 Pre-signed URL을 생성해야 하므로 네트워크 I/O 과부하 발생.
+
+<img width="983" height="458" alt="image" src="https://github.com/user-attachments/assets/fd4f366e-112b-42dc-ab78-3b3cf494c841" />
+
+<img width="981" height="491" alt="image" src="https://github.com/user-attachments/assets/b4fa077c-fc64-4393-9748-06592e1fd483" />
+
+
 * **해결 방법**: 생성된 Pre-signed URL을 Redis에 캐싱(TTL 55분)하여 유효 시간 동안 재사용하도록 구현.
+
+<img width="748" height="360" alt="image" src="https://github.com/user-attachments/assets/e783eab7-83f3-4760-8add-636a273800ad" />
+
+<img width="684" height="376" alt="image" src="https://github.com/user-attachments/assets/5f310ca8-a7b2-4e28-85e4-ce37527a0853" />
+
 * **결과**: 게시글 목록 조회 성능이 **약 6배 향상**(279ms → 41ms)되었습니다.
 
 ### 2. 인증/인가, CSRF 보안 강화 (Session & CSRF)
+
+<img width="842" height="479" alt="image" src="https://github.com/user-attachments/assets/203d4109-be5e-41e9-a5a5-00e1d2560911" />
+
 * **JWT 대신 세션을 선택한 이유**: 모놀리식 구조에서 상태 유지가 용이하며, 별도의 인증 서버가 없이 API 서버에서 Refresh Token 관리 시, 발생하는 Stateless 위배 문제를 방지하기 위함, Spring Security 호환성
 * **CSRF 방어**: Spring Security 6의 마스킹된 토큰 해석 문제를 해결하기 위해 `CsrfTokenRequestAttributeHandler`를 커스텀 설정하여 SPA 환경에서의 보안을 강화했습니다.
 
