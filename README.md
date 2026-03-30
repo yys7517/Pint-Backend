@@ -39,7 +39,8 @@
 
 ## ✨ 담당 기능 및 개인 개발내용
 ### 1. 이미지 로딩 성능 최적화 (Redis Caching)
-<img width="984" height="456" alt="image" src="https://github.com/user-attachments/assets/21064e20-5ea4-43a1-831d-d6702b7c05ea" />
+
+<img width="1564" height="741" alt="image" src="https://github.com/user-attachments/assets/20821442-49ce-4a2e-9cfa-25548988872a" />
 
 * **문제 상황**: S3 Private 버킷 보안 정책상 매번 Pre-signed URL을 생성해야 하므로 네트워크 I/O 과부하 발생.
 
