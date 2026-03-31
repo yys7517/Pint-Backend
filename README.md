@@ -43,18 +43,7 @@
 <img width="1564" height="741" alt="image" src="https://github.com/user-attachments/assets/20821442-49ce-4a2e-9cfa-25548988872a" />
 
 * **문제 상황**: S3 Private 버킷 보안 정책상 매번 Pre-signed URL을 생성해야 하므로 네트워크 I/O 과부하 발생.
-
-<img width="983" height="458" alt="image" src="https://github.com/user-attachments/assets/fd4f366e-112b-42dc-ab78-3b3cf494c841" />
-
-<img width="981" height="491" alt="image" src="https://github.com/user-attachments/assets/b4fa077c-fc64-4393-9748-06592e1fd483" />
-
-
 * **해결 방법**: 생성된 Pre-signed URL을 Redis에 캐싱(TTL 55분)하여 유효 시간 동안 재사용하도록 구현.
-
-<img width="748" height="360" alt="image" src="https://github.com/user-attachments/assets/e783eab7-83f3-4760-8add-636a273800ad" />
-
-<img width="684" height="376" alt="image" src="https://github.com/user-attachments/assets/5f310ca8-a7b2-4e28-85e4-ce37527a0853" />
-
 * **결과**: 게시글 목록 조회 성능이 **약 6배 향상**(279ms → 41ms)되었습니다.
 
 ### 2. 인증/인가, CSRF 보안 강화 (Session & CSRF)
@@ -108,15 +97,11 @@
    - 컨텍스트를 길게 가져가더라도, 문서화를 통해 주제별로 세션을 다양하게 다룰 수 있었습니다.
    - 간결한 프롬프트만으로도 사전에 정의된 research와 plan 문서를 참조하도록 하여, 코드의 정확도를 높였고, 문서화를 통해 Agent으 문맥 파악을 더 쉽게하여, 답변 시간을 단축시킬 수 있었습니다.
 
-<br />
-
 ## 배포 URL
 [Vercel](https://pint-frontend-three.vercel.app/)
 
 ## 발표 자료
 [Canva](https://www.canva.com/design/DAHEKSCKbUA/o8SECI8vNXv_zIGzlzHQDw/edit?utm_content=DAHEKSCKbUA&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
-
-<br />
 
 ## 시연영상
 [Demo](https://drive.google.com/file/d/1XNfFHuV3prxDul5s8yuP_z-fmJ1zi8cw/view)
