@@ -67,8 +67,15 @@
 <br />
 **해결**: JPQL JOIN FETCH를 적용하여 단 한 번의 쿼리로 연관 객체까지 일괄 조회
 
+### 5. 이미지 압축 전략
 
-### 5. Vibe Coding 전략 (With. Codex)
+<img width="1026" height="523" alt="image" src="https://github.com/user-attachments/assets/e74d2502-fa3d-445b-ba14-138c4cd4493f" />
+
+* 이미지를 많이 노출하는 랜딩 페이지, 프로필 페이지에서 로딩 성능을 개선하기 위해, 이미지를 저장할 때, 이미지의 원본과 압축본을 같이 저장하게끔 하였습니다.
+* 사용자가 이미지 업로드 시, 이미지 파일을 압축한 복사본을 만들어, 이미지 별로 **원본 Path**, **압축본 Path**를 같이 저장하였습니다.
+* 이미지가 많이 노출되는 **랜딩 페이지**, **프로필 페이지**에서는 압축본을 불러오도록 하였고, 게시글 상세 페이지에서는 화질이 좋은 원본을 불러오도록 하여, 성능과 가독성을 동시에 챙기고자 노력하였습니다.
+
+### 6. Vibe Coding 전략 (With. Codex)
 <img width="533" height="481" alt="image" src="https://github.com/user-attachments/assets/b554fc74-0d1b-4a56-9312-46f32c04e1be" />
 
 ```
