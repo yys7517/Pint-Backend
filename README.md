@@ -115,7 +115,7 @@
 
 <br />
 
-## 👥 Contributors (현대오토에버 SW 스쿨 3기 1조)
+## 👥 Contributors
 * [**김준성 (Backend)**](https://github.com/jsktt)
 * [**윤영선 (Backend)**](https://github.com/yys7517)
 <br />
